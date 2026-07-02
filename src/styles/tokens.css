@@ -1,0 +1,16 @@
+:root {
+  --base-ink: #101214;
+  --panel-ink: #181b1f;
+  --panel-soft: #202429;
+  --paper-mist: #e7dfca;
+  --paper-warm: #f5eedb;
+  --pixel-green: #7acb79;
+  --signal-cyan: #61c7d4;
+  --amber-glow: #f2b84b;
+  --rose-alert: #e26773;
+  --muted-violet: #8b7bd8;
+  --line-dark: #2a2d30;
+  --ink-muted: #9da5a8;
+  --shadow-pixel: 6px 6px 0 rgba(0, 0, 0, 0.26);
+  --max-page: 1120px;
+}
