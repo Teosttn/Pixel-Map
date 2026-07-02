@@ -1,5 +1,5 @@
 import { getBlogPosts } from "@/lib/content";
-import { siteConfig } from "@/lib/site";
+import { absoluteUrl, siteConfig } from "@/lib/site";
 
 function escapeXml(value: string) {
   return value
@@ -13,7 +13,7 @@ function escapeXml(value: string) {
 export function GET() {
   const items = getBlogPosts()
     .map((post) => {
-      const url = `${siteConfig.url}/blog/${post.slug}`;
+      const url = absoluteUrl(`/blog/${post.slug}`);
       return `<item>
   <title>${escapeXml(post.title)}</title>
   <link>${url}</link>

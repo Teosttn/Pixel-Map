@@ -6,6 +6,7 @@ import markdownItAttrs from "markdown-it-attrs";
 import markdownItContainer from "markdown-it-container";
 import { full as markdownItEmoji } from "markdown-it-emoji";
 import markdownItMark from "markdown-it-mark";
+import { withBasePath } from "@/lib/site";
 
 const contentRoot = path.join(process.cwd(), "src", "content");
 
@@ -257,7 +258,7 @@ function transformLegacyInline(line: string) {
     })
     .replace(/\{%\s*asset_img\s+([^%]+?)\s*%\}/g, (_, assetName: string) => {
       const cleanName = String(assetName).trim();
-      const src = `/legacy-assets/${encodeURIComponent(cleanName)}`;
+      const src = withBasePath(`/legacy-assets/${encodeURIComponent(cleanName)}`);
       return `<img src="${src}" alt="${escapeHtml(cleanName)}" class="md-asset-image" />`;
     });
 }

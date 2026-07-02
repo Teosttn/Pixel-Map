@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Bilingual } from "@/components/content/Bilingual";
 import { PixelCard } from "@/components/content/PixelCard";
 
@@ -48,9 +49,9 @@ export default function AboutPage() {
             <a className="pixel-button" href="mailto:hello@example.com">
               Email
             </a>
-            <a className="pixel-button" href="/rss.xml">
+            <Link className="pixel-button" href="/rss.xml">
               RSS
-            </a>
+            </Link>
           </div>
         </PixelCard>
         <PixelCard accent="var(--pixel-green)">
