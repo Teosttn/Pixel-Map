@@ -1,0 +1,33 @@
+src/lib/content.ts
+  s_ba3c71b40ff8e8::t_bcd2e659bf6454 9,261
+src/app/sitemap.xml/route.ts
+  s_ba3c71b40ff8e8::t_079aa7d1e93bc0 2,5,9
+src/lib/site.ts
+  s_ba3c71b40ff8e8::t_83c97a50def10b 1-15,18-19
+.github/workflows/nextjs.yml
+  s_ba3c71b40ff8e8::t_c4b6127441f77a 57,72-75,77
+src/app/about/page.tsx
+  s_ba3c71b40ff8e8::t_6d8bc9cfc8f940 2,52,54
+next.config.mjs
+  s_ba3c71b40ff8e8::t_80064b3b441787 3-9
+src/app/rss.xml/route.ts
+  s_ba3c71b40ff8e8::t_698aeedb1a2b39 2,16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "afa89ad3803db665b596d6f9f56f3c3c03703b39",
+  "prompts": {},
+  "sessions": {
+    "s_ba3c71b40ff8e8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6c9bd78a-372b-468d-a7a6-21e7a821589f",
+        "model": "unknown"
+      },
+      "human_author": "Aerozw <aerozw@yeah.net>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
