@@ -9,7 +9,7 @@ export function MotionRuntime() {
 
     const targets = Array.from(
       document.querySelectorAll(
-        ".pixel-card, .prose, .timeline-item, .article-list > *, .home-preview a, [data-reveal]"
+        ".pixel-card, .timeline-item, .article-list > *, .home-preview a, [data-reveal]"
       )
     );
 

@@ -1,7 +1,7 @@
 ---
 name: "Pixel-Map"
 slug: "pixel-map"
-summary: "A personal content universe with a playable map entrance and quiet reading surfaces."
+summary: "A pixel-map homepage for writing, projects, signals, and experiments."
 status: "active"
 tech: ["Next.js", "TypeScript", "Canvas", "Markdown"]
 demoUrl: "/"

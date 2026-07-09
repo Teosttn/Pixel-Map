@@ -1,0 +1,53 @@
+{
+  "maxItemsPerRun": 5,
+  "openAiModel": "gpt-4.1-mini",
+  "topicKeywords": [
+    "AI",
+    "agent",
+    "LLM",
+    "frontend",
+    "React",
+    "Next.js",
+    "TypeScript",
+    "design system",
+    "developer experience",
+    "product"
+  ],
+  "sources": [
+    {
+      "name": "Hacker News",
+      "type": "rss",
+      "url": "https://hnrss.org/frontpage",
+      "tags": ["tech", "engineering"],
+      "weight": 1.1
+    },
+    {
+      "name": "GitHub Blog",
+      "type": "rss",
+      "url": "https://github.blog/feed/",
+      "tags": ["engineering", "developer-tools"],
+      "weight": 1
+    },
+    {
+      "name": "web.dev",
+      "type": "rss",
+      "url": "https://web.dev/feed.xml",
+      "tags": ["frontend", "web"],
+      "weight": 1
+    },
+    {
+      "name": "Vercel Blog",
+      "type": "rss",
+      "url": "https://vercel.com/blog/rss.xml",
+      "tags": ["frontend", "Next.js"],
+      "weight": 0.9
+    },
+    {
+      "name": "OpenAI News",
+      "type": "rss",
+      "url": "https://openai.com/news/rss.xml",
+      "tags": ["AI", "product"],
+      "weight": 1.2
+    }
+  ]
+}

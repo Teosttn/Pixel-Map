@@ -27,11 +27,17 @@ export type NewsItem = {
   type: "news";
   slug: string;
   title: string;
+  titleZh: string;
+  titleEn: string;
   date: string;
   source: string;
   url: string;
   summary: string;
+  summaryZh: string;
+  summaryEn: string;
   comment?: string;
+  commentZh?: string;
+  commentEn?: string;
   tags: string[];
   pinned: boolean;
   body: string;
@@ -130,11 +136,17 @@ export function getNewsItems() {
     type: "news",
     slug,
     title: text(data.title, slug),
+    titleZh: text(data.titleZh, text(data.title, slug)),
+    titleEn: text(data.titleEn, text(data.title, slug)),
     date: text(data.date),
     source: text(data.source),
     url: text(data.url),
     summary: text(data.summary),
+    summaryZh: text(data.summaryZh, text(data.summary)),
+    summaryEn: text(data.summaryEn, text(data.summary)),
     comment: text(data.comment) || undefined,
+    commentZh: text(data.commentZh, text(data.comment)) || undefined,
+    commentEn: text(data.commentEn, text(data.comment)) || undefined,
     tags: list(data.tags),
     pinned: bool(data.pinned),
     body
@@ -175,6 +187,18 @@ function escapeHtml(value: string) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function normalizeFenceLanguage(value: string) {
+  return value.replace(/^language-/, "").replace(/[^A-Za-z0-9_+#.-]/g, "");
+}
+
+function parseFenceInfo(info: string) {
+  const [rawLanguage = "", ...filenameParts] = info.trim().split(/\s+/).filter(Boolean);
+  return {
+    language: normalizeFenceLanguage(rawLanguage),
+    filename: filenameParts.join(" ")
+  };
 }
 
 const md = new MarkdownIt({
@@ -236,6 +260,27 @@ md.renderer.rules.link_open = (tokens, index, options, env, self) => {
     tokens[index].attrSet("rel", "noreferrer");
   }
   return defaultRender(tokens, index, options, env, self);
+};
+
+md.renderer.rules.fence = (tokens, index) => {
+  const token = tokens[index];
+  const { language, filename } = parseFenceInfo(token.info);
+  const figureAttributes = [
+    'class="md-code-block"',
+    language ? `data-language="${escapeHtml(language)}"` : "",
+    filename ? `data-filename="${escapeHtml(filename)}"` : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const codeClass = language ? ` class="language-${escapeHtml(language)}"` : "";
+  const caption =
+    language || filename
+      ? `<figcaption class="md-code-block__meta">${
+          filename ? `<span class="md-code-block__filename">${escapeHtml(filename)}</span>` : ""
+        }${language ? `<span class="md-code-block__language">${escapeHtml(language)}</span>` : ""}</figcaption>`
+      : "";
+
+  return `<figure ${figureAttributes}>${caption}<pre><code${codeClass}>${escapeHtml(token.content)}</code></pre></figure>\n`;
 };
 
 function legacyClassList(input: string) {

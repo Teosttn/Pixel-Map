@@ -32,8 +32,8 @@ export function PixelMapCanvas() {
       lastDraw = now;
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
-      const tile = width < 700 ? 18 : 24;
-      const pointerActive = now - pointer.activeAt < 1600;
+      const tile = width < 700 ? 18 : 26;
+      const pointerActive = now - pointer.activeAt < 1400;
       context.clearRect(0, 0, width, height);
       context.fillStyle = "#101214";
       context.fillRect(0, 0, width, height);
@@ -52,13 +52,13 @@ export function PixelMapCanvas() {
           const px = x / width - pointer.x;
           const py = y / height - pointer.y;
           const distance = Math.sqrt(px * px + py * py);
-          const hoverPulse = pointerActive ? Math.max(0, 1 - distance * 5.4) : 0;
+          const hoverPulse = pointerActive ? Math.max(0, 1 - distance * 4.8) : 0;
           const seed = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
-          const rareBlink = Math.sin(now * 0.0012 + seed * 18) > 0.992 ? 1 : 0;
+          const rareBlink = Math.sin(now * 0.00072 + seed * 18) > 0.997 ? 1 : 0;
           const paletteIndex = Math.abs(Math.floor((x / tile) * 3 + (y / tile) * 5 + seed * palette.length)) % palette.length;
-          const alpha = 0.04 + hoverPulse * 0.26 + rareBlink * 0.24;
-          const block = Math.max(3, tile * (rareBlink ? 0.55 : hoverPulse > 0.1 ? 0.48 : 0.32));
-          context.fillStyle = `rgba(${palette[paletteIndex]}, ${Math.min(alpha, 0.42)})`;
+          const alpha = 0.026 + hoverPulse * 0.18 + rareBlink * 0.2;
+          const block = Math.max(3, tile * (rareBlink ? 0.48 : hoverPulse > 0.1 ? 0.42 : 0.28));
+          context.fillStyle = `rgba(${palette[paletteIndex]}, ${Math.min(alpha, 0.32)})`;
           context.fillRect(x, y, block, block);
         }
       }
@@ -74,10 +74,10 @@ export function PixelMapCanvas() {
       for (const [sx, sy, rgb] of signals) {
         const x = Number(sx) * width;
         const y = Number(sy) * height;
-        const radius = 22 + Math.sin(now * 0.0011 + x) * 5;
-        context.fillStyle = `rgba(${rgb}, ${pointerActive ? 0.14 : 0.09})`;
+        const radius = 20 + Math.sin(now * 0.0008 + x) * 4;
+        context.fillStyle = `rgba(${rgb}, ${pointerActive ? 0.12 : 0.07})`;
         context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
-        context.fillStyle = `rgba(${rgb}, ${pointerActive ? 0.48 : 0.32})`;
+        context.fillStyle = `rgba(${rgb}, ${pointerActive ? 0.42 : 0.26})`;
         context.fillRect(x - 5, y - 5, 10, 10);
       }
 

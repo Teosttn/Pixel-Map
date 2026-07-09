@@ -73,11 +73,14 @@ jobs:
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
+          NEXT_PUBLIC_GITHUB_REPOSITORY: ${{ github.repository }}
+          NEXT_PUBLIC_GITHUB_BRANCH: main
         run: ${{ steps.detect-package-manager.outputs.manager }} run build
       - name: Verify exported artifact
         run: |
           test -f out/index.html
           test -f out/404.html
+          test -f out/admin/index.html
           test -f out/rss.xml
           test -f out/sitemap.xml
       - name: Upload artifact

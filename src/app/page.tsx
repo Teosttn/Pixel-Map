@@ -16,15 +16,9 @@ export default function HomePage() {
         <PixelMapCanvas />
         <div className="home-map__content">
           <div className="home-map__title">
-            <p className="eyebrow">
-              <Bilingual zh="个人内容地图" en="personal content atlas" />
-            </p>
             <h1>Pixel-Map</h1>
-            <p>
-              <Bilingual
-                zh="一个可探索的个人内容世界，用来承载长文、精选资讯、项目作品和小实验。"
-                en="A navigable personal world for long notes, curated signals, shipped work, and small experiments."
-              />
+            <p className="home-map__kind">
+              <Bilingual zh="个人网站" en="Personal Site" />
             </p>
           </div>
           <div className="node-field">

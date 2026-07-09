@@ -17,7 +17,7 @@ const skills = [
 ];
 
 const timeline = [
-  ["Now", "Building Pixel-Map as a personal content atlas."],
+  ["Now", "Building Pixel-Map as a personal site."],
   ["Recent", "Collecting product, AI, and frontend notes into durable writing."],
   ["Always", "Trying to make technical systems feel clearer and more humane."]
 ];

@@ -35,11 +35,22 @@ export default function NewsPage() {
             </p>
             <h2 className="article-title">
               <a href={item.url} target="_blank" rel="noreferrer">
-                {item.title}
+                <Bilingual zh={item.titleZh} en={item.titleEn} />
               </a>
             </h2>
-            {item.comment ? <p className="article-summary">{item.comment}</p> : null}
-            <p className="article-summary">{item.summary}</p>
+            {item.commentZh || item.commentEn || item.comment ? (
+              <p className="article-summary">
+                <Bilingual zh={item.commentZh || item.comment || ""} en={item.commentEn || item.comment || ""} />
+              </p>
+            ) : null}
+            <p className="article-summary">
+              <Bilingual zh={item.summaryZh} en={item.summaryEn} />
+            </p>
+            <p>
+              <a className="pixel-button" href={item.url} target="_blank" rel="noreferrer">
+                <Bilingual zh="原文链接" en="Original" />
+              </a>
+            </p>
             <Tags tags={item.tags} />
           </PixelCard>
         ))}
