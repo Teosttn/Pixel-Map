@@ -201,7 +201,7 @@ git commit -m "feat: add safe local content repository"
 - Modify: `src/content/config/tabs.json`
 - Modify: `src/lib/site.ts`
 - Create: `src/app/[slug]/page.tsx`
-- Create: `src/content/pages/start-here.md`
+- Create: `scripts/check-custom-pages.mjs`
 - Create: `admin/server/tabs.mjs`
 - Create: `admin/server/tabs.test.mjs`
 
@@ -241,9 +241,9 @@ Expected: FAIL because the shared validator is absent.
 
 Define required map fields as `glyph`, `landmark`, `x`, `y`, `color`, `title`, `zhTitle`, `description`, and `zhDescription`. Validate `kind` as `built-in|page|external`, HTTPS for external links, `/slug` for internal links, unique id/href/order, and reserved custom slugs. Convert the current five tabs without changing their user-facing labels.
 
-- [ ] **Step 4: Add public custom-page generation**
+- [ ] **Step 4: Add public custom-page generation and its source contract**
 
-The root dynamic route generates only visible `page` tabs, reads `src/content/pages/<slug>.md`, calls `notFound` for absent pages, and renders through `markdownToHtml`. Static built-in routes continue to win over `[slug]`.
+The root dynamic route generates only visible `page` tabs, reads `src/content/pages/<slug>.md`, calls `notFound` for absent pages, and renders through `markdownToHtml`. Static built-in routes continue to win over `[slug]`. Do not add a placeholder production tab. Instead, create `scripts/check-custom-pages.mjs` that asserts the route exports `generateStaticParams`, filters `kind === "page"`, reads the pages collection, and renders with `markdownToHtml`.
 
 - [ ] **Step 5: Add local tab operations**
 
@@ -253,14 +253,16 @@ Implement `readTabs`, `writeTabs`, and `createPageForTab`. A page tab creation w
 
 Run: `node --test shared/site-config.test.mjs admin/server/tabs.test.mjs`
 
+Run: `node scripts/check-custom-pages.mjs`
+
 Run: `npm run typecheck`
 
 Run: `npm run build`
 
-Expected: PASS and `/start-here/` is exported.
+Expected: PASS with no extra production tab added.
 
 ```bash
-git add shared src/content/config/tabs.json src/content/pages src/lib/site.ts 'src/app/[slug]/page.tsx' admin/server
+git add shared scripts/check-custom-pages.mjs src/content/config/tabs.json src/lib/site.ts 'src/app/[slug]/page.tsx' admin/server
 git commit -m "feat: manage tabs from one validated schema"
 ```
 
@@ -461,4 +463,3 @@ git add package.json scripts/check-admin-isolation.mjs scripts/check-workflows.m
 git rm src/app/admin/page.tsx src/components/admin/AdminConsole.tsx
 git commit -m "refactor: isolate administration from public site"
 ```
-

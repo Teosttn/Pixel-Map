@@ -493,8 +493,7 @@ assert.match(daily, /group: daily-news/);
 assert.match(daily, /OPENAI_API_KEY: \$\{\{ secrets\.OPENAI_API_KEY \}\}/);
 assert.match(daily, /needs: generate/);
 assert.match(daily, /group: pages/);
-assert.match(pages, /test ! -f out\/admin\/index\.html/);
-assert.doesNotMatch(pages, /test -f out\/admin\/index\.html/);
+assert.match(pages, /actions\/upload-pages-artifact@v4/);
 ```
 
 Add `"test:workflows": "node scripts/check-workflows.mjs"` and run it.
@@ -507,7 +506,7 @@ Create a `generate` job with `concurrency.group: daily-news`, a 20-minute timeou
 
 - [ ] **Step 3: Narrow normal Pages concurrency**
 
-Move `pages` concurrency from workflow level to the `deploy` job in `nextjs.yml`, keep builds parallel, and change artifact verification to `test ! -f out/admin/index.html`.
+Move `pages` concurrency from workflow level to the `deploy` job in `nextjs.yml` and keep builds parallel. The local-admin plan owns removal of the public admin route and changes artifact verification only after that route has been removed.
 
 - [ ] **Step 4: Verify all news contracts**
 
@@ -529,4 +528,3 @@ Expected: all PASS.
 git add package.json scripts/check-workflows.mjs .github/workflows/daily-news.yml .github/workflows/nextjs.yml
 git commit -m "ci: make daily news publishing recoverable"
 ```
-
