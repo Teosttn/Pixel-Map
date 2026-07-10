@@ -23,9 +23,13 @@ function readTag(block, names) {
 }
 
 function readLink(block) {
-  const atomLink = block.match(/<link\b([^>]*)\/?>/i);
-  const href = atomLink?.[1]?.match(/\bhref=["']([^"']+)["']/i)?.[1];
-  return href ? decodeHtml(href).trim() : readTag(block, ["link", "guid", "id"]);
+  for (const match of block.matchAll(/<link\b([^>]*)\/?>/gi)) {
+    const attributes = match[1];
+    const href = attributes.match(/\bhref=["']([^"']+)["']/i)?.[1];
+    const rel = attributes.match(/\brel=["']([^"']+)["']/i)?.[1];
+    if (href && (!rel || rel.toLowerCase() === "alternate")) return decodeHtml(href).trim();
+  }
+  return readTag(block, ["link", "guid", "id"]);
 }
 
 function readPublishedAt(block, now) {
