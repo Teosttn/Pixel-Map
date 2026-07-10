@@ -39,9 +39,9 @@ export function selectFreshItems(items, options) {
       const url = canonicalUrl(item.url);
       const keywordScore = options.topicKeywords.filter((keyword) => `${item.title} ${item.summary}`.toLowerCase().includes(keyword.toLowerCase())).length;
       const freshness = Math.max(0, 1 - (options.now.getTime() - new Date(item.publishedAt).getTime()) / (options.maxAgeHours * 60 * 60 * 1000));
-      return { ...item, url, score: Number(item.weight || 1) + keywordScore + freshness };
+      return { ...item, url, score: Number(item.weight ?? 1) + keywordScore + freshness };
     })
-    .sort((a, b) => b.score - a.score || b.publishedAt.localeCompare(a.publishedAt))
+    .sort((a, b) => b.score - a.score || new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
     .filter((item) => {
       const title = normalizeTitle(item.title);
       if (options.seenUrls.has(item.url.toLowerCase()) || urls.has(item.url) || titles.has(title)) return false;
