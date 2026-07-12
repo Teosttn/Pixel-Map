@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-11T03:52:56.477Z",
+  "updatedAt": "2026-07-12T04:07:34.787Z",
   "urls": [
     "/news",
     "https://developer.mozilla.org/en-us/docs/web/css/css_container_queries",
@@ -9,14 +9,19 @@
     "https://openai.com/index/genspark",
     "https://openai.com/index/gpt-5-1-codex-max-system-card",
     "https://openai.com/index/how-agents-are-transforming-work",
+    "https://openai.com/index/klarna",
     "https://openai.com/index/netomi",
     "https://vercel.com/blog/ai-gateway-is-now-generally-available",
     "https://vercel.com/blog/ai-sdk-6",
     "https://vercel.com/blog/ai-sdk-7",
     "https://vercel.com/blog/introducing-react-best-practices",
     "https://vercel.com/blog/vercel-collaborates-with-openai-for-gpt-5-launch",
+    "https://vercel.com/blog/vercel-for-enterprise-apps-and-agents",
+    "https://vercel.com/blog/vercel-services-run-full-stack-on-vercel",
     "https://vercel.com/changelog/ai-sdk-7",
+    "https://vercel.com/changelog/auth0-joins-the-vercel-marketplace",
     "https://vercel.com/changelog/chat-sdk-adds-web-adapter-support",
+    "https://vercel.com/changelog/introducing-eve-an-open-source-agent-framework",
     "https://vercel.com/changelog/next-forge-6"
   ]
 }
