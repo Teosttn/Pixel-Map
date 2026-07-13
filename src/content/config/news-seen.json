@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-12T04:07:34.787Z",
+  "updatedAt": "2026-07-13T04:09:50.586Z",
   "urls": [
     "/news",
     "https://developer.mozilla.org/en-us/docs/web/css/css_container_queries",
@@ -11,6 +11,7 @@
     "https://openai.com/index/how-agents-are-transforming-work",
     "https://openai.com/index/klarna",
     "https://openai.com/index/netomi",
+    "https://ploy.ai/blog/migrating-a-production-ai-agent-to-gpt-5-6",
     "https://vercel.com/blog/ai-gateway-is-now-generally-available",
     "https://vercel.com/blog/ai-sdk-6",
     "https://vercel.com/blog/ai-sdk-7",
@@ -21,7 +22,11 @@
     "https://vercel.com/changelog/ai-sdk-7",
     "https://vercel.com/changelog/auth0-joins-the-vercel-marketplace",
     "https://vercel.com/changelog/chat-sdk-adds-web-adapter-support",
+    "https://vercel.com/changelog/firecrawl-joins-the-vercel-marketplace",
     "https://vercel.com/changelog/introducing-eve-an-open-source-agent-framework",
-    "https://vercel.com/changelog/next-forge-6"
+    "https://vercel.com/changelog/manage-vercel-microfrontends-with-ai-agents-and-the-cli",
+    "https://vercel.com/changelog/next-forge-6",
+    "https://vercel.com/changelog/qwen-3-7-max-now-available-on-vercel-ai-gateway",
+    "https://vercel.com/changelog/qwen-3-7-plus-now-available-on-ai-gateway"
   ]
 }
