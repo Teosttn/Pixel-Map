@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import { Bilingual } from "@/components/content/Bilingual";
 import { PixelCard } from "@/components/content/PixelCard";
 import { Tags } from "@/components/content/Tags";
-import { getNewsItems } from "@/lib/content";
+import Link from "next/link";
+import { getNewsDigests } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "News",
-  description: "Curated signals, links, and short comments."
+  description: "Daily bilingual technical-news digests."
 };
 
 export default function NewsPage() {
-  const items = getNewsItems();
+  const digests = getNewsDigests();
 
   return (
     <main className="page">
@@ -27,31 +28,25 @@ export default function NewsPage() {
         />
       </p>
       <section className="timeline">
-        {items.map((item) => (
-          <PixelCard key={item.slug} accent={item.pinned ? "var(--amber-glow)" : "var(--signal-cyan)"}>
+        {digests.map((digest) => (
+          <PixelCard key={digest.slug} accent="var(--signal-cyan)">
             <p className="meta">
-              {item.pinned ? "PINNED / " : ""}
-              {item.date} / {item.source}
+              {digest.date} / {digest.itemCount} items / {digest.sources.join(", ")}
             </p>
             <h2 className="article-title">
-              <a href={item.url} target="_blank" rel="noreferrer">
-                <Bilingual zh={item.titleZh} en={item.titleEn} />
-              </a>
+              <Link href={`/news/${digest.slug}`}>
+                <Bilingual zh={digest.titleZh} en={digest.titleEn} />
+              </Link>
             </h2>
-            {item.commentZh || item.commentEn || item.comment ? (
-              <p className="article-summary">
-                <Bilingual zh={item.commentZh || item.comment || ""} en={item.commentEn || item.comment || ""} />
-              </p>
-            ) : null}
             <p className="article-summary">
-              <Bilingual zh={item.summaryZh} en={item.summaryEn} />
+              <Bilingual zh={digest.summaryZh} en={digest.summaryEn} />
             </p>
             <p>
-              <a className="pixel-button" href={item.url} target="_blank" rel="noreferrer">
-                <Bilingual zh="原文链接" en="Original" />
-              </a>
+              <Link className="pixel-button" href={`/news/${digest.slug}`}>
+                <Bilingual zh="阅读摘要" en="Read digest" />
+              </Link>
             </p>
-            <Tags tags={item.tags} />
+            <Tags tags={digest.tags} />
           </PixelCard>
         ))}
       </section>

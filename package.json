@@ -10,6 +10,7 @@
     "news:fetch": "node scripts/fetch-news.mjs",
     "test:markdown": "node scripts/check-markdown-codeblocks.mjs",
     "test:news": "node --test scripts/news/*.test.mjs",
+    "test:content": "node scripts/check-news-content.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

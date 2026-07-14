@@ -23,23 +23,19 @@ export type BlogPost = {
   body: string;
 };
 
-export type NewsItem = {
-  type: "news";
+export type NewsDigest = {
+  type: "daily-digest";
   slug: string;
   title: string;
   titleZh: string;
   titleEn: string;
   date: string;
-  source: string;
-  url: string;
-  summary: string;
   summaryZh: string;
   summaryEn: string;
-  comment?: string;
-  commentZh?: string;
-  commentEn?: string;
   tags: string[];
-  pinned: boolean;
+  published: boolean;
+  itemCount: number;
+  sources: string[];
   body: string;
 };
 
@@ -109,6 +105,11 @@ function bool(value: unknown, fallback = false) {
   return typeof value === "boolean" ? value : fallback;
 }
 
+function number(value: unknown, fallback = 0) {
+  const parsed = typeof value === "string" ? Number(value) : value;
+  return typeof parsed === "number" && Number.isFinite(parsed) ? parsed : fallback;
+}
+
 export function readingTime(body: string) {
   const words = body.replace(/```[\s\S]*?```/g, "").split(/\s+/).filter(Boolean).length;
   return `${Math.max(1, Math.ceil(words / 220))} min read`;
@@ -131,26 +132,24 @@ export function getBlogPosts() {
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
-export function getNewsItems() {
-  return readCollection<NewsItem>("news", (slug, data, body) => ({
-    type: "news",
+export function getNewsDigests() {
+  return readCollection<NewsDigest>("news", (slug, data, body) => ({
+    type: "daily-digest",
     slug,
     title: text(data.title, slug),
     titleZh: text(data.titleZh, text(data.title, slug)),
     titleEn: text(data.titleEn, text(data.title, slug)),
     date: text(data.date),
-    source: text(data.source),
-    url: text(data.url),
-    summary: text(data.summary),
-    summaryZh: text(data.summaryZh, text(data.summary)),
-    summaryEn: text(data.summaryEn, text(data.summary)),
-    comment: text(data.comment) || undefined,
-    commentZh: text(data.commentZh, text(data.comment)) || undefined,
-    commentEn: text(data.commentEn, text(data.comment)) || undefined,
+    summaryZh: text(data.summaryZh),
+    summaryEn: text(data.summaryEn),
     tags: list(data.tags),
-    pinned: bool(data.pinned),
+    published: bool(data.published, true),
+    itemCount: number(data.itemCount),
+    sources: list(data.sources),
     body
-  })).sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.date.localeCompare(a.date));
+  }))
+    .filter((digest) => digest.published)
+    .sort((a, b) => b.date.localeCompare(a.date));
 }
 
 export function getProjects() {
@@ -172,9 +171,13 @@ export function getBlogPost(slug: string) {
   return getBlogPosts().find((post) => post.slug === slug);
 }
 
+export function getNewsDigest(slug: string) {
+  return getNewsDigests().find((digest) => digest.slug === slug);
+}
+
 export function getAllTags() {
   const tags = new Set<string>();
-  for (const item of [...getBlogPosts(), ...getNewsItems()]) {
+  for (const item of [...getBlogPosts(), ...getNewsDigests()]) {
     item.tags.forEach((tag) => tags.add(tag));
   }
   return [...tags].sort((a, b) => a.localeCompare(b));

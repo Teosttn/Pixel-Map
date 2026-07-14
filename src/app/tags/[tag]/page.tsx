@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelCard } from "@/components/content/PixelCard";
 import { Tags } from "@/components/content/Tags";
-import { getAllTags, getBlogPosts, getNewsItems } from "@/lib/content";
+import { getAllTags, getBlogPosts, getNewsDigests } from "@/lib/content";
 
 export function generateStaticParams() {
   return getAllTags().map((tag) => ({ tag }));
@@ -19,7 +19,7 @@ export function generateMetadata({ params }: { params: { tag: string } }): Metad
 export default function TagPage({ params }: { params: { tag: string } }) {
   const tag = decodeURIComponent(params.tag);
   const posts = getBlogPosts().filter((post) => post.tags.includes(tag));
-  const news = getNewsItems().filter((item) => item.tags.includes(tag));
+  const news = getNewsDigests().filter((digest) => digest.tags.includes(tag));
 
   return (
     <main className="page">
@@ -43,18 +43,16 @@ export default function TagPage({ params }: { params: { tag: string } }) {
             <Tags tags={post.tags} />
           </PixelCard>
         ))}
-        {news.map((item) => (
-          <PixelCard key={item.slug} accent="var(--signal-cyan)">
+        {news.map((digest) => (
+          <PixelCard key={digest.slug} accent="var(--signal-cyan)">
             <p className="meta">
-              News / {item.date} / {item.source}
+              News / {digest.date} / {digest.itemCount} items
             </p>
             <h2 className="article-title">
-              <a href={item.url} target="_blank" rel="noreferrer">
-                {item.title}
-              </a>
+              <Link href={`/news/${digest.slug}`}>{digest.title}</Link>
             </h2>
-            <p className="article-summary">{item.summary}</p>
-            <Tags tags={item.tags} />
+            <p className="article-summary">{digest.summaryEn}</p>
+            <Tags tags={digest.tags} />
           </PixelCard>
         ))}
       </section>

@@ -1,11 +1,12 @@
-import { getAllTags, getBlogPosts } from "@/lib/content";
+import { getAllTags, getBlogPosts, getNewsDigests } from "@/lib/content";
 import { absoluteUrl } from "@/lib/site";
 
 export function GET() {
   const routes = ["/", "/blog", "/news", "/projects", "/about", "/lab", "/admin"];
   const blogRoutes = getBlogPosts().map((post) => `/blog/${post.slug}`);
+  const newsRoutes = getNewsDigests().map((digest) => `/news/${digest.slug}`);
   const tagRoutes = getAllTags().map((tag) => `/tags/${encodeURIComponent(tag)}`);
-  const urls = [...routes, ...blogRoutes, ...tagRoutes]
+  const urls = [...routes, ...blogRoutes, ...newsRoutes, ...tagRoutes]
     .map((route) => `<url><loc>${absoluteUrl(route)}</loc></url>`)
     .join("");
 

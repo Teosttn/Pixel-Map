@@ -2,12 +2,12 @@ import Link from "next/link";
 import { Bilingual } from "@/components/content/Bilingual";
 import { PixelMapCanvas } from "@/components/pixel/PixelMapCanvas";
 import { MapNode } from "@/components/pixel/MapNode";
-import { getBlogPosts, getNewsItems, getProjects } from "@/lib/content";
+import { getBlogPosts, getNewsDigests, getProjects } from "@/lib/content";
 import { mapNodes } from "@/lib/site";
 
 export default function HomePage() {
   const [post] = getBlogPosts();
-  const [news] = getNewsItems();
+  const [news] = getNewsDigests();
   const [project] = getProjects();
 
   return (

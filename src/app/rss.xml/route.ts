@@ -1,4 +1,4 @@
-import { getBlogPosts } from "@/lib/content";
+import { getBlogPosts, getNewsDigests } from "@/lib/content";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 
 function escapeXml(value: string) {
@@ -11,15 +11,28 @@ function escapeXml(value: string) {
 }
 
 export function GET() {
-  const items = getBlogPosts()
-    .map((post) => {
-      const url = absoluteUrl(`/blog/${post.slug}`);
+  const items = [
+    ...getBlogPosts().map((post) => ({
+      title: post.title,
+      date: post.date,
+      summary: post.summary,
+      url: absoluteUrl(`/blog/${post.slug}`)
+    })),
+    ...getNewsDigests().map((digest) => ({
+      title: digest.titleEn,
+      date: digest.date,
+      summary: digest.summaryEn,
+      url: absoluteUrl(`/news/${digest.slug}`)
+    }))
+  ]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .map((item) => {
       return `<item>
-  <title>${escapeXml(post.title)}</title>
-  <link>${url}</link>
-  <guid>${url}</guid>
-  <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-  <description>${escapeXml(post.summary)}</description>
+  <title>${escapeXml(item.title)}</title>
+  <link>${item.url}</link>
+  <guid>${item.url}</guid>
+  <pubDate>${new Date(item.date).toUTCString()}</pubDate>
+  <description>${escapeXml(item.summary)}</description>
 </item>`;
     })
     .join("\n");
