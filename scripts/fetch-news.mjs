@@ -4,11 +4,10 @@ import { fileURLToPath } from "node:url";
 import { runDailyDigest } from "./news/run.mjs";
 
 export function parseArguments(argumentsList) {
-  const options = { force: false, allowSourceFallback: false };
+  const options = { force: false };
 
   for (const argument of argumentsList) {
     if (argument === "--force") options.force = true;
-    else if (argument === "--allow-source-fallback") options.allowSourceFallback = true;
     else throw new Error(`Unknown argument: ${argument}`);
   }
 
@@ -24,6 +23,34 @@ export async function writeGithubOutput(summary, output = process.env.GITHUB_OUT
   await appendFile(output, `changed=${summary.changed}\ndigest_path=${summary.digestPath}\n`, "utf8");
 }
 
+export async function writeGithubStepSummary(summary, output = process.env.GITHUB_STEP_SUMMARY) {
+  if (!output) return;
+  const cell = (value) => String(value ?? "").replace(/\|/g, "\\|").replace(/[\r\n]+/g, " ");
+  const failures = summary.failures?.length
+    ? summary.failures.map((failure) => `- ${cell(failure.source)}: ${cell(failure.message)}`).join("\n")
+    : "- None";
+  const sourceRows = (summary.sourceHealth || []).map((source) => `| ${cell(source.source)} | ${cell(source.status)} | ${source.itemCount} |`).join("\n") || "| No source data | unknown | 0 |";
+  const markdown = [
+    `## Daily News ${summary.date}`,
+    "",
+    "| Metric | Value |",
+    "| --- | ---: |",
+    `| Status | ${summary.status} |`,
+    `| Fetched | ${summary.fetchedCount} |`,
+    `| Selected | ${summary.selectedCount} |`,
+    "",
+    "### Source failures",
+    failures,
+    "",
+    "### Source health",
+    "| Source | Status | Items |",
+    "| --- | --- | ---: |",
+    sourceRows,
+    ""
+  ].join("\n");
+  await appendFile(output, markdown, "utf8");
+}
+
 export async function main(argumentsList = process.argv.slice(2)) {
   const options = parseArguments(argumentsList);
   const digest = await runDailyDigest(options);
@@ -35,11 +62,12 @@ export async function main(argumentsList = process.argv.slice(2)) {
     changed,
     fetchedCount: digest.fetchedCount,
     selectedCount: digest.selectedCount,
-    failures: digest.failures
+    failures: digest.failures,
+    sourceHealth: digest.sourceHealth
   };
 
   console.log(JSON.stringify(summary));
-  await writeGithubOutput(summary);
+  await Promise.all([writeGithubOutput(summary), writeGithubStepSummary(summary)]);
 
   return summary;
 }

@@ -14,6 +14,8 @@ assert.match(css, /prefers-reduced-motion/);
 assert.doesNotMatch(css, /\.pixel-map-canvas\s*\{[^}]*display:\s*none/);
 assert.match(canvas, /ResizeObserver/);
 assert.match(canvas, /visibilitychange/);
+assert.match(css, /\.map-node\[data-active="true"\] \.map-node__label/, "touch activation must reveal the localized label");
+assert.match(css, /\.map-node__beacon\s*\{[\s\S]*?width:\s*42px/, "resting map controls must use a stable icon target");
 
 for (const match of css.matchAll(/(?:animation|transition):[^;]*?\b(\d+(?:\.\d+)?)(ms|s)\b/g)) {
   const duration = Number(match[1]) * (match[2] === "s" ? 1000 : 1);

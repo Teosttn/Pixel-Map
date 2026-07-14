@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 const daily = readFileSync(".github/workflows/daily-news.yml", "utf8");
 const pages = readFileSync(".github/workflows/nextjs.yml", "utf8");
+const fetchNews = readFileSync("scripts/fetch-news.mjs", "utf8");
 
 assert.match(daily, /cron: "30 0 \* \* \*"/);
 assert.match(daily, /cron: "10 1 \* \* \*"/);
@@ -22,6 +23,8 @@ assert.match(daily, /actions\/upload-pages-artifact@v4/);
 assert.match(daily, /needs: generate/);
 assert.match(daily, /needs\.generate\.outputs\.changed == 'true'/);
 assert.match(daily, /actions\/deploy-pages@v5/);
+assert.match(fetchNews, /GITHUB_STEP_SUMMARY/);
+assert.match(fetchNews, /writeGithubStepSummary/);
 
 assert.doesNotMatch(pages, /^concurrency:/m);
 assert.match(pages, /\n  deploy:\n[\s\S]*?group: pages/);

@@ -98,3 +98,40 @@ test("selectFreshItems preserves an explicit zero weight", () => {
 
   assert.equal(selected[0].score, 1);
 });
+
+test("selectFreshItems enforces source caps and fills configured group quotas", () => {
+  const now = new Date("2026-07-10T17:00:00Z");
+  const makeItem = (source, group, index, weight) => ({
+    title: `${source} story ${index}`,
+    url: `https://${source.toLowerCase()}.example/${index}`,
+    summary: "AI model release",
+    publishedAt: new Date(now.getTime() - index * 60_000).toISOString(),
+    source,
+    group,
+    tags: ["AI"],
+    weight
+  });
+  const items = [
+    ...Array.from({ length: 5 }, (_, index) => makeItem("Vercel", "global", index, 10)),
+    makeItem("MachineHeart", "cn", 10, 1),
+    makeItem("Qwen", "cn", 11, 1),
+    makeItem("Arxiv", "research", 12, 1),
+    makeItem("HuggingFace", "open-source", 13, 1)
+  ];
+
+  const selected = selectFreshItems(items, {
+    now,
+    maxAgeHours: 72,
+    maxItems: 6,
+    maxPerSource: 2,
+    groupQuotas: { cn: 2, global: 2, research: 1, "open-source": 1 },
+    seenUrls: new Set(),
+    topicKeywords: ["AI"]
+  });
+
+  assert.deepEqual(
+    Object.fromEntries([...new Set(selected.map((item) => item.group))].map((group) => [group, selected.filter((item) => item.group === group).length])),
+    { cn: 2, global: 2, research: 1, "open-source": 1 }
+  );
+  assert.equal(selected.filter((item) => item.source === "Vercel").length, 2);
+});

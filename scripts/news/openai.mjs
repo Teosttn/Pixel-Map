@@ -14,20 +14,6 @@ function cloneFeedItem(item) {
   };
 }
 
-function fallbackItem(item) {
-  const summary = String(item.summary || item.title || "").trim();
-
-  return {
-    ...cloneFeedItem(item),
-    titleZh: item.title,
-    titleEn: item.title,
-    summaryZh: `原文摘要：${summary}`,
-    summaryEn: summary,
-    commentZh: "已保留原文链接，建议打开来源阅读全文并核对上下文。",
-    commentEn: "Original link retained for source verification."
-  };
-}
-
 function responseText(data) {
   const text = data.output_text || data.output
     ?.flatMap((entry) => entry.content || [])
@@ -72,49 +58,60 @@ export function validateSummaryOutput(value, expectedLength) {
         throw new Error(`OpenAI item ${index} missing ${key}`);
       }
     }
+    for (const stem of ["title", "summary", "comment"]) {
+      const zh = item[`${stem}Zh`].toLowerCase().replace(/[^a-z0-9\u3400-\u9fff]+/gu, " ").trim();
+      const en = item[`${stem}En`].toLowerCase().replace(/[^a-z0-9\u3400-\u9fff]+/gu, " ").trim();
+      if (zh === en) throw new Error(`OpenAI item ${index} ${stem} translations must not be identical`);
+    }
+    for (const key of ["titleZh", "summaryZh", "commentZh"]) {
+      if (!/[\u3400-\u9fff]/u.test(item[key])) throw new Error(`OpenAI item ${index} ${key} must contain Chinese text`);
+    }
+    for (const key of ["titleEn", "summaryEn", "commentEn"]) {
+      if (!/[A-Za-z]/.test(item[key]) || /[\u3400-\u9fff]/u.test(item[key])) throw new Error(`OpenAI item ${index} ${key} must contain English text`);
+    }
   });
 
   return value;
 }
 
 export async function summarizeItems(items, options = {}) {
-  const { apiKey, model = "gpt-4.1-mini", fetchImpl = fetch, allowFallback = false } = options;
-  const canFallback = allowFallback === true;
+  const { apiKey, model = "gpt-4.1-mini", fetchImpl = fetch } = options;
 
   if (!apiKey) {
-    if (canFallback) return items.map(fallbackItem);
     throw new Error("OPENAI_API_KEY is required for news summarization");
   }
 
   if (items.length === 0) return [];
 
-  const response = await fetchImpl("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${apiKey}`,
-      "content-type": "application/json"
-    },
-    body: JSON.stringify({
-      model,
-      input: [
-        {
-          role: "system",
-          content: "Summarize each technical news item bilingually. Return only one valid JSON array in the same order and length as the input. Each object must contain non-empty strings for titleZh, titleEn, summaryZh, summaryEn, commentZh, and commentEn. Do not include Markdown or any other fields. Preserve factual uncertainty and do not add facts beyond the supplied item."
-        },
-        { role: "user", content: JSON.stringify(summaryInput(items)) }
-      ],
-      temperature: 0.2
-    })
-  });
+  const request = async (system, user) => {
+    const response = await fetchImpl("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        model,
+        input: [{ role: "system", content: system }, { role: "user", content: user }],
+        temperature: 0.2
+      })
+    });
+    if (!response.ok) throw new Error(`OpenAI summary request failed with ${response.status}: ${await response.text()}`);
+    return responseText(await response.json());
+  };
 
-  if (!response.ok) {
-    throw new Error(`OpenAI summary request failed with ${response.status}: ${await response.text()}`);
+  const basePrompt = "Translate and summarize each technical news item into genuine bilingual text. Every *Zh field must be natural Simplified Chinese and every *En field must be natural English; corresponding fields must not be copied or identical. Return only one valid JSON array in the same order and length as the input. Each object must contain non-empty strings for titleZh, titleEn, summaryZh, summaryEn, commentZh, and commentEn. Do not include Markdown or any other fields. Preserve factual uncertainty and do not add facts beyond the supplied item.";
+  const input = JSON.stringify(summaryInput(items));
+  const firstText = await request(basePrompt, input);
+  let summaries;
+  try {
+    summaries = validateSummaryOutput(parseSummaryArray(firstText), items.length);
+  } catch (firstError) {
+    const repairPrompt = `${basePrompt} Repair the previous response because it failed strict language or JSON validation. Return a complete corrected array, not an explanation.`;
+    const repairedText = await request(repairPrompt, JSON.stringify({ sourceItems: summaryInput(items), invalidResponse: firstText, validationError: firstError.message }));
+    try {
+      summaries = validateSummaryOutput(parseSummaryArray(repairedText), items.length);
+    } catch (repairError) {
+      throw new Error(`OpenAI bilingual output remained invalid after repair: ${repairError.message}`);
+    }
   }
-
-  const summaries = validateSummaryOutput(
-    parseSummaryArray(responseText(await response.json())),
-    items.length
-  );
 
   return items.map((item, index) => {
     const text = summaries[index];

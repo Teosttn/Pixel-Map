@@ -18,11 +18,15 @@ function readCookie(header = "", name) {
   return header.split(";").map((part) => part.trim().split("=")).find(([key]) => key === name)?.[1];
 }
 
-function deny(res, message) {
+function deny(res, message, code) {
   res.statusCode = 403;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.end(JSON.stringify({ error: message }));
+  res.end(JSON.stringify(code ? { error: message, code } : { error: message }));
   return false;
+}
+
+function refreshSession(res, secret) {
+  res.setHeader("Set-Cookie", `${SESSION_COOKIE}=${secret}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800`);
 }
 
 export function createSessionGuard({ secret, allowedOrigins }) {
@@ -36,9 +40,11 @@ export function createSessionGuard({ secret, allowedOrigins }) {
     if (origin && !origins.has(origin)) return deny(res, "Request origin is not allowed.");
 
     const session = readCookie(req.headers.cookie, SESSION_COOKIE);
-    if (!session) res.setHeader("Set-Cookie", `${SESSION_COOKIE}=${secret}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800`);
-    if (isMutation && session !== secret) {
-      return deny(res, "Local admin session is required. Reload the page and try again.");
+    if (session !== secret) {
+      refreshSession(res, secret);
+      if (isMutation) {
+        return deny(res, "Local admin session was refreshed. Retrying the request.", "SESSION_REQUIRED");
+      }
     }
     return true;
   };

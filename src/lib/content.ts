@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import hljs from "highlight.js/lib/common";
 import MarkdownIt from "markdown-it";
 import markdownItAnchor from "markdown-it-anchor";
 import markdownItAttrs from "markdown-it-attrs";
@@ -20,6 +21,7 @@ export type BlogPost = {
   category: string;
   readingTime: string;
   published: boolean;
+  deleted: boolean;
   body: string;
 };
 
@@ -34,6 +36,7 @@ export type NewsDigest = {
   summaryEn: string;
   tags: string[];
   published: boolean;
+  deleted: boolean;
   itemCount: number;
   sources: string[];
   body: string;
@@ -49,6 +52,8 @@ export type Project = {
   demoUrl?: string;
   repoUrl?: string;
   featured: boolean;
+  published: boolean;
+  deleted: boolean;
   body: string;
 };
 
@@ -60,6 +65,7 @@ export type CustomPage = {
   titleEn: string;
   summary: string;
   published: boolean;
+  deleted: boolean;
   body: string;
 };
 
@@ -137,9 +143,10 @@ export function getBlogPosts() {
     category: text(data.category, "Notes"),
     readingTime: readingTime(body),
     published: bool(data.published, true),
+    deleted: bool(data.deleted),
     body
   }))
-    .filter((post) => post.published)
+    .filter((post) => post.published && !post.deleted)
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
@@ -155,11 +162,12 @@ export function getNewsDigests() {
     summaryEn: text(data.summaryEn),
     tags: list(data.tags),
     published: bool(data.published, true),
+    deleted: bool(data.deleted),
     itemCount: number(data.itemCount),
     sources: list(data.sources),
     body
   }))
-    .filter((digest) => digest.published)
+    .filter((digest) => digest.published && !digest.deleted)
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
@@ -174,8 +182,10 @@ export function getProjects() {
     demoUrl: text(data.demoUrl) || undefined,
     repoUrl: text(data.repoUrl) || undefined,
     featured: bool(data.featured),
+    published: bool(data.published, true),
+    deleted: bool(data.deleted),
     body
-  })).sort((a, b) => Number(b.featured) - Number(a.featured) || a.name.localeCompare(b.name));
+  })).filter((project) => project.published && !project.deleted).sort((a, b) => Number(b.featured) - Number(a.featured) || a.name.localeCompare(b.name));
 }
 
 export function getCustomPage(slug: string) {
@@ -187,8 +197,9 @@ export function getCustomPage(slug: string) {
     titleEn: text(data.titleEn, text(data.title, pageSlug)),
     summary: text(data.summary),
     published: bool(data.published, true),
+    deleted: bool(data.deleted),
     body
-  })).find((page) => page.slug === slug && page.published);
+  })).find((page) => page.slug === slug && page.published && !page.deleted);
 }
 
 export function getBlogPost(slug: string) {
@@ -226,6 +237,11 @@ function parseFenceInfo(info: string) {
     language: normalizeFenceLanguage(rawLanguage),
     filename: filenameParts.join(" ")
   };
+}
+
+function lineNumbers(content: string) {
+  const lineCount = Math.max(1, content.replace(/\n$/, "").split("\n").length);
+  return Array.from({ length: lineCount }, (_, index) => index + 1).join("\n");
 }
 
 const md = new MarkdownIt({
@@ -302,6 +318,9 @@ md.renderer.rules.image = (tokens, index, options, env, self) => {
 md.renderer.rules.fence = (tokens, index) => {
   const token = tokens[index];
   const { language, filename } = parseFenceInfo(token.info);
+  const highlighted = language && hljs.getLanguage(language)
+    ? hljs.highlight(token.content, { language, ignoreIllegals: true }).value
+    : escapeHtml(token.content);
   const figureAttributes = [
     'class="md-code-block"',
     language ? `data-language="${escapeHtml(language)}"` : "",
@@ -317,7 +336,7 @@ md.renderer.rules.fence = (tokens, index) => {
         }${language ? `<span class="md-code-block__language">${escapeHtml(language)}</span>` : ""}</figcaption>`
       : "";
 
-  return `<figure ${figureAttributes}>${caption}<pre><code${codeClass}>${escapeHtml(token.content)}</code></pre></figure>\n`;
+  return `<figure ${figureAttributes}>${caption}<div class="md-code-block__body"><pre class="md-code-block__gutter" aria-hidden="true">${lineNumbers(token.content)}</pre><pre><code${codeClass}>${highlighted}</code></pre></div></figure>\n`;
 };
 
 function legacyClassList(input: string) {

@@ -1,0 +1,31 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const editor = readFileSync("admin/src/pages/ContentEditorPage.tsx", "utf8");
+const client = readFileSync("admin/src/api/client.ts", "utf8");
+const css = readFileSync("admin/src/admin.css", "utf8");
+const app = readFileSync("admin/src/App.tsx", "utf8");
+const shell = readFileSync("admin/src/components/AdminShell.tsx", "utf8");
+const apiServer = readFileSync("admin/server/api.mjs", "utf8");
+const publish = readFileSync("admin/src/pages/PublishPage.tsx", "utf8");
+
+assert.doesNotMatch(editor, /type="checkbox"[\s\S]*?>发布/);
+assert.match(editor, /save\("draft"\)/);
+assert.match(editor, /save\("publish"\)/);
+assert.match(editor, /deleted:\s*false/);
+assert.match(editor, /published:\s*intent === "publish"/);
+assert.match(editor, /StatusBanner tone="success"/);
+assert.match(editor, /<details className="advanced-metadata">/);
+assert.match(css, /\.editor-actions\s*\{[\s\S]*?position:\s*sticky/);
+assert.match(client, /SESSION_REQUIRED/);
+assert.match(client, /apiRequest[\s\S]*?apiRequest/);
+assert.match(app, /pathname === "\/publish"/);
+assert.match(shell, /\["\/publish", "Publish"\]/);
+assert.match(apiServer, /parts\[2\] === "publish-status"/);
+assert.match(apiServer, /parts\[2\] === "publish"/);
+assert.match(apiServer, /sessionGuard\(req, res\)/);
+assert.match(publish, /提交说明/);
+assert.match(publish, /type="checkbox"/);
+assert.match(publish, /确认发布到 main/);
+assert.match(publish, /api<PublishResult>\("\/git\/publish"/);
+assert.match(css, /\.publish-pipeline/);

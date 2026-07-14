@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { access, mkdtemp, readFile, readdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { parseArguments, writeGithubOutput } from "../fetch-news.mjs";
+import { parseArguments, writeGithubOutput, writeGithubStepSummary } from "../fetch-news.mjs";
 import { runDailyDigest } from "./run.mjs";
 
 async function createFixture() {
@@ -116,10 +116,30 @@ test("runDailyDigest removes temporary files after a write failure", async () =>
   assert.equal(files.some((file) => String(file).endsWith(".tmp")), false);
 });
 
-test("fetch-news CLI options require explicit fallback opt-in", () => {
-  assert.deepEqual(parseArguments([]), { force: false, allowSourceFallback: false });
-  assert.deepEqual(parseArguments(["--force", "--allow-source-fallback"]), { force: true, allowSourceFallback: true });
+test("fetch-news CLI exposes force without a fake translation fallback", () => {
+  assert.deepEqual(parseArguments([]), { force: false });
+  assert.deepEqual(parseArguments(["--force"]), { force: true });
+  assert.throws(() => parseArguments(["--allow-source-fallback"]), /Unknown argument/);
   assert.throws(() => parseArguments(["--unknown"]), /Unknown argument/);
+});
+
+test("runDailyDigest passes source caps and group quotas into selection", async () => {
+  const root = await createFixture();
+  let selectionOptions;
+  await runDailyDigest({
+    root,
+    config: { ...config, maxPerSource: 2, groupQuotas: { cn: 2, global: 2 } },
+    state: { urls: [] },
+    dependencies: {
+      now: new Date("2026-07-10T00:30:00Z"),
+      fetchSources: async () => ({ items: [item], failures: [] }),
+      selectFreshItems: (items, options) => { selectionOptions = options; return items; },
+      summarizeItems: async (items) => items.map((entry) => ({ ...entry, ...summarizedItem }))
+    }
+  });
+
+  assert.equal(selectionOptions.maxPerSource, 2);
+  assert.deepEqual(selectionOptions.groupQuotas, { cn: 2, global: 2 });
 });
 
 test("fetch-news writes machine-readable change metadata to GITHUB_OUTPUT", async () => {
@@ -132,4 +152,26 @@ test("fetch-news writes machine-readable change metadata to GITHUB_OUTPUT", asyn
     await readFile(output, "utf8"),
     "changed=true\ndigest_path=src/content/news/2026-07-10-daily-digest.md\n"
   );
+});
+
+test("fetch-news writes source health to the GitHub step summary", async () => {
+  const root = await createFixture();
+  const output = join(root, "github-summary");
+  await writeGithubStepSummary({
+    status: "published", date: "2026-07-10", fetchedCount: 23, selectedCount: 8,
+    failures: [{ source: "Offline Feed", message: "timeout" }],
+    sourceHealth: [
+      { source: "OpenAI", status: "ok", itemCount: 12 },
+      { source: "Quiet Feed", status: "empty", itemCount: 0 },
+      { source: "Offline Feed", status: "failed", itemCount: 0, message: "timeout" }
+    ]
+  }, output);
+
+  const markdown = await readFile(output, "utf8");
+  assert.match(markdown, /Daily News 2026-07-10/);
+  assert.match(markdown, /Fetched \| 23/);
+  assert.match(markdown, /Selected \| 8/);
+  assert.match(markdown, /Offline Feed: timeout/);
+  assert.match(markdown, /OpenAI \| ok \| 12/);
+  assert.match(markdown, /Quiet Feed \| empty \| 0/);
 });

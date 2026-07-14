@@ -16,7 +16,7 @@
     "test:visual-motion": "node scripts/check-visual-motion.mjs",
     "typecheck": "tsc --noEmit",
     "admin": "vite --config admin/vite.config.mjs",
-    "test:admin": "node --test admin/server/*.test.mjs",
+    "test:admin": "node --test admin/server/*.test.mjs && node scripts/check-admin-editor.mjs",
     "test:admin-isolation": "node scripts/check-admin-isolation.mjs",
     "test:workflows": "node scripts/check-workflows.mjs"
   },
@@ -24,6 +24,8 @@
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "highlight.js": "^11.11.1",
+    "lucide-react": "^0.468.0",
     "markdown-it": "^14.3.0",
     "markdown-it-anchor": "^9.2.0",
     "markdown-it-attrs": "^5.0.0",

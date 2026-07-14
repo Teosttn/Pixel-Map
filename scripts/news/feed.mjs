@@ -60,7 +60,10 @@ export function parseFeed(xml, source, now = new Date()) {
       publishedAt: readPublishedAt(block, now),
       source: source.name,
       tags: source.tags || [],
-      weight: source.weight ?? 1
+      weight: source.weight ?? 1,
+      region: source.region || "global",
+      category: source.category || "general",
+      group: source.group || source.region || "global"
     };
   }).filter((item) => item.title && /^https?:\/\//.test(item.url));
 }
@@ -84,8 +87,15 @@ export async function fetchSources(sources, options) {
   }));
 
   return results.reduce((output, result, index) => {
-    if (result.status === "fulfilled") output.items.push(...result.value);
-    else output.failures.push({ source: sources[index].name, message: result.reason.message });
+    const source = sources[index].name;
+    if (result.status === "fulfilled") {
+      output.items.push(...result.value);
+      output.sourceHealth.push({ source, status: result.value.length > 0 ? "ok" : "empty", itemCount: result.value.length });
+    } else {
+      const message = result.reason.message;
+      output.failures.push({ source, message });
+      output.sourceHealth.push({ source, status: "failed", itemCount: 0, message });
+    }
     return output;
-  }, { items: [], failures: [] });
+  }, { items: [], failures: [], sourceHealth: [] });
 }

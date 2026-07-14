@@ -11,7 +11,7 @@ type IsometricMapProps = { tabs: MapTab[] };
 
 export function IsometricMap({ tabs }: IsometricMapProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+  const [pointer, setPointer] = useState<{ x: number; y: number; activeAt: number } | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [layout, setLayout] = useState<RenderedLandmark[]>(() =>
     tabs.map((tab, index) => ({
@@ -41,7 +41,7 @@ export function IsometricMap({ tabs }: IsometricMapProps) {
       data-reduced-motion={reducedMotion}
       onPointerMove={(event) => {
         const rect = event.currentTarget.getBoundingClientRect();
-        setPointer({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+        setPointer({ x: event.clientX - rect.left, y: event.clientY - rect.top, activeAt: performance.now() });
       }}
       onPointerLeave={() => setPointer(null)}
     >
