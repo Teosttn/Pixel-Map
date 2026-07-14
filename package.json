@@ -16,7 +16,7 @@
     "test:visual-motion": "node scripts/check-visual-motion.mjs",
     "typecheck": "tsc --noEmit",
     "admin": "vite --config admin/vite.config.mjs",
-    "test:admin": "node --test admin/server/*.test.mjs",
+    "test:admin": "node --test admin/server/*.test.mjs && node scripts/check-admin-editor.mjs",
     "test:admin-isolation": "node scripts/check-admin-isolation.mjs",
     "test:workflows": "node scripts/check-workflows.mjs"
   },
