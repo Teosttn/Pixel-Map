@@ -16,5 +16,14 @@ assert.ok(js.length > 0);
 const renderer = readFileSync("src/components/pixel/isometric-renderer.ts", "utf8");
 assert.match(renderer, /export function drawWorld/);
 assert.match(renderer, /drawImage|fillRect|beginPath/);
-assert.match(renderer, /terrainLayer/);
 assert.match(renderer, /devicePixelRatio/);
+assert.doesNotMatch(renderer, /document\.createElement\("canvas"\)/, "the map must fuse all visual layers into one canvas renderer");
+assert.match(renderer, /rgba\(/, "terrain and landmarks must preserve the dark canvas beneath them");
+assert.match(renderer, /rareBlink/, "the sparse background field must retain rare blinking");
+
+const node = readFileSync("src/components/pixel/MapNode.tsx", "utf8");
+const css = readFileSync("src/styles/globals.css", "utf8");
+assert.match(node, /<TabIcon/, "map controls must render the controlled Lucide icon");
+assert.doesNotMatch(node, /zhDescription/, "map controls must not expose descriptions");
+assert.match(css, /\.map-node:hover \.map-node__label/, "hover must reveal the compact localized label");
+assert.match(css, /\.map-node__label\s*\{[\s\S]*?width:\s*0/, "labels must be collapsed at rest");

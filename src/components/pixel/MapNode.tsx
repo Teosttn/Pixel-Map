@@ -3,8 +3,10 @@ import Link from "next/link";
 import { Bilingual } from "@/components/content/Bilingual";
 import type { MapTab } from "./isometric";
 import type { RenderedLandmark } from "./isometric-renderer";
+import { TabIcon } from "./TabIcon";
 
 type MapNodeProps = MapTab & {
+  icon?: string;
   position?: RenderedLandmark;
   active: boolean;
   onActiveChange: (active: boolean) => void;
@@ -13,12 +15,10 @@ type MapNodeProps = MapTab & {
 export function MapNode({
   href,
   color,
-  glyph,
   label,
   title,
   zhTitle,
-  description,
-  zhDescription,
+  icon,
   position,
   active,
   onActiveChange
@@ -45,16 +45,10 @@ export function MapNode({
       onBlur={() => onActiveChange(false)}
     >
       <span className="map-node__beacon" aria-hidden="true">
-        {glyph}
+        <TabIcon name={icon} />
       </span>
       <span className="map-node__label">
-        <strong>{label}</strong>
-        <small>
-          <Bilingual zh={zhTitle} en={title} />
-        </small>
-        <em>
-          <Bilingual zh={zhDescription} en={description} />
-        </em>
+        <Bilingual zh={zhTitle} en={title} />
       </span>
     </Link>
   );

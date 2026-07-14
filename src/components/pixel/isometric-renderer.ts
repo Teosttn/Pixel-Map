@@ -24,23 +24,29 @@ export type DrawWorldOptions = {
   metrics: IsoMetrics;
   tabs: MapTab[];
   activeId: string | null;
-  pointer: { x: number; y: number } | null;
+  pointer: { x: number; y: number; activeAt?: number } | null;
   time: number;
   devicePixelRatio: number;
 };
 
 const terrainPalette: Record<Terrain, readonly [string, string, string]> = {
-  grass: ["#7acb79", "#579b5c", "#3e7448"],
-  water: ["#61c7d4", "#3e9eae", "#287786"],
-  stone: ["#bec6c1", "#7e8988", "#596363"],
-  path: ["#f2b84b", "#b88233", "#76541f"]
+  grass: ["122, 203, 121", "87, 155, 92", "62, 116, 72"],
+  water: ["97, 199, 212", "62, 158, 174", "40, 119, 134"],
+  stone: ["190, 198, 193", "126, 137, 136", "89, 99, 99"],
+  path: ["242, 184, 75", "184, 130, 51", "118, 84, 31"]
 };
 
-const landmarkPalette = ["#7acb79", "#61c7d4", "#f2b84b", "#e26773", "#8b7bd8", "#e7dfca"];
-const terrainCache = new Map<string, HTMLCanvasElement>();
+const pixelPalette = [
+  "122, 203, 121",
+  "97, 199, 212",
+  "242, 184, 75",
+  "226, 103, 115",
+  "139, 123, 216",
+  "231, 223, 202"
+];
 
-function colorForLandmark(index: number) {
-  return landmarkPalette[index % landmarkPalette.length];
+function rgba(rgb: string, alpha: number) {
+  return `rgba(${rgb}, ${Math.min(alpha, 0.7)})`;
 }
 
 function diamond(
@@ -61,16 +67,39 @@ function diamond(
   context.fill();
 }
 
+function pointerPulse(point: { x: number; y: number }, options: DrawWorldOptions) {
+  if (!options.pointer || options.time - (options.pointer.activeAt ?? options.time) > 1400) return 0;
+  return Math.max(0, 1 - Math.hypot(options.pointer.x - point.x, options.pointer.y - point.y) / 210);
+}
+
+function drawPixelField(context: CanvasRenderingContext2D, options: DrawWorldOptions) {
+  const tile = options.width < 700 ? 18 : 26;
+  for (let y = 0; y < options.height; y += tile) {
+    for (let x = 0; x < options.width; x += tile) {
+      const hoverPulse = pointerPulse({ x, y }, options);
+      const seed = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
+      const rareBlink = Math.sin(options.time * 0.00072 + seed * 18) > 0.997;
+      const paletteIndex = Math.abs(Math.floor((x / tile) * 3 + (y / tile) * 5 + seed * pixelPalette.length)) % pixelPalette.length;
+      const alpha = 0.025 + hoverPulse * 0.16 + Number(rareBlink) * 0.18;
+      const block = Math.max(3, tile * (rareBlink ? 0.48 : hoverPulse > 0.1 ? 0.42 : 0.28));
+      context.fillStyle = rgba(pixelPalette[paletteIndex], alpha);
+      context.fillRect(x, y, block, block);
+    }
+  }
+}
+
 function drawTile(
   context: CanvasRenderingContext2D,
   tile: WorldTile,
   metrics: IsoMetrics,
-  neighbors: Map<string, WorldTile>
+  neighbors: Map<string, WorldTile>,
+  options: DrawWorldOptions
 ) {
   const point = projectTile(tile, metrics);
   const [top, left, right] = terrainPalette[tile.terrain];
   const west = neighbors.get(`${tile.x - 1}:${tile.y}`)?.elevation ?? 0;
   const north = neighbors.get(`${tile.x}:${tile.y - 1}`)?.elevation ?? 0;
+  const pulse = pointerPulse(point, options);
 
   if (tile.elevation > west) {
     context.beginPath();
@@ -79,7 +108,7 @@ function drawTile(
     context.lineTo(point.x, point.y + metrics.tileHeight / 2 + tile.elevation * metrics.levelHeight);
     context.lineTo(point.x - metrics.tileWidth / 2, point.y + tile.elevation * metrics.levelHeight);
     context.closePath();
-    context.fillStyle = left;
+    context.fillStyle = rgba(left, 0.09 + pulse * 0.14);
     context.fill();
   }
 
@@ -90,49 +119,64 @@ function drawTile(
     context.lineTo(point.x + metrics.tileWidth / 2, point.y + tile.elevation * metrics.levelHeight);
     context.lineTo(point.x, point.y + metrics.tileHeight / 2 + tile.elevation * metrics.levelHeight);
     context.closePath();
-    context.fillStyle = right;
+    context.fillStyle = rgba(right, 0.07 + pulse * 0.12);
     context.fill();
   }
 
-  diamond(context, point.x, point.y, metrics.tileWidth, metrics.tileHeight, top);
+  diamond(context, point.x, point.y, metrics.tileWidth, metrics.tileHeight, rgba(top, 0.13 + pulse * 0.18));
 }
 
-function terrainLayer(world: WorldTile[], options: DrawWorldOptions) {
-  const bucket = `${Math.round(options.width / 80)}:${Math.round(options.height / 80)}:${Math.round(
-    options.width
-  )}:${Math.round(options.height)}:${options.size}:${options.tabs.map((tab) => tab.id).join(",")}`;
-  const cached = terrainCache.get(bucket);
-  if (cached) return cached;
-
-  const layer = document.createElement("canvas");
-  const ratio = Math.min(options.devicePixelRatio || 1, 2);
-  layer.width = Math.max(1, Math.floor(options.width * ratio));
-  layer.height = Math.max(1, Math.floor(options.height * ratio));
-  const context = layer.getContext("2d");
-  if (!context) return layer;
-
-  context.setTransform(ratio, 0, 0, ratio, 0, 0);
+function drawTerrain(context: CanvasRenderingContext2D, world: WorldTile[], options: DrawWorldOptions) {
   const neighbors = new Map(world.map((tile) => [`${tile.x}:${tile.y}`, tile]));
   for (const tile of [...world].sort((a, b) => a.x + a.y - (b.x + b.y))) {
-    drawTile(context, tile, options.metrics, neighbors);
+    drawTile(context, tile, options.metrics, neighbors, options);
   }
-  terrainCache.set(bucket, layer);
-  return layer;
+
+  for (const tile of world) {
+    if (tile.terrain !== "water" || (tile.x + tile.y) % 5 !== 0) continue;
+    const point = projectTile(tile, options.metrics);
+    const wave = Math.floor(options.time / 1800 + tile.x * 2 + tile.y) % 3 === 0;
+    if (wave) {
+      context.fillStyle = rgba("231, 223, 202", 0.24 + pointerPulse(point, options) * 0.2);
+      context.fillRect(point.x - 4, point.y - 1, 8, 2);
+    }
+  }
 }
 
-function drawCuboid(
+function landmarkColor(index: number) {
+  return pixelPalette[index % pixelPalette.length];
+}
+
+function drawColumn(
   context: CanvasRenderingContext2D,
   x: number,
-  y: number,
+  baseY: number,
   width: number,
   height: number,
-  color: string
+  rgb: string,
+  emphasis: number
 ) {
-  diamond(context, x, y - height, width, width / 2, color);
-  context.fillStyle = "#202429";
-  context.fillRect(x - width / 2, y - height, width / 2, height);
-  context.fillStyle = "#101214";
-  context.fillRect(x, y - height, width / 2, height);
+  const topY = baseY - height;
+  const halfHeight = width / 4;
+  diamond(context, x, topY, width, width / 2, rgba(rgb, 0.32 + emphasis * 0.24));
+
+  context.beginPath();
+  context.moveTo(x - width / 2, topY);
+  context.lineTo(x, topY + halfHeight);
+  context.lineTo(x, baseY + halfHeight);
+  context.lineTo(x - width / 2, baseY);
+  context.closePath();
+  context.fillStyle = rgba(rgb, 0.13 + emphasis * 0.13);
+  context.fill();
+
+  context.beginPath();
+  context.moveTo(x, topY + halfHeight);
+  context.lineTo(x + width / 2, topY);
+  context.lineTo(x + width / 2, baseY);
+  context.lineTo(x, baseY + halfHeight);
+  context.closePath();
+  context.fillStyle = rgba(rgb, 0.09 + emphasis * 0.1);
+  context.fill();
 }
 
 function drawLandmark(
@@ -143,51 +187,28 @@ function drawLandmark(
 ) {
   const point = projectTile(landmark, options.metrics);
   const active = options.activeId === landmark.id;
-  const hovered = options.pointer
-    ? Math.hypot(options.pointer.x - point.x, options.pointer.y - point.y) < options.metrics.tileWidth
-    : false;
-  const lift = active || hovered ? 5 : 0;
-  const color = colorForLandmark(index);
+  const pulse = pointerPulse(point, options);
+  const lift = active || pulse > 0.12 ? 5 + pulse * 4 : 0;
   const baseY = point.y - landmark.elevation * options.metrics.levelHeight - lift;
   const heights: Record<Landmark["type"], number> = {
-    library: 34,
-    tower: 58,
-    workshop: 28,
-    house: 25,
-    portal: 38,
-    page: 24
+    library: 52,
+    tower: 76,
+    workshop: 44,
+    house: 40,
+    portal: 62,
+    page: 38
   };
-  const width = landmark.type === "tower" ? 21 : 28;
-
-  drawCuboid(context, point.x, baseY, width, heights[landmark.type], color);
-  if (landmark.type === "tower") drawCuboid(context, point.x, baseY - 38, 15, 24, color);
-  if (landmark.type === "library") {
-    context.fillStyle = "#e7dfca";
-    context.fillRect(point.x - 9, baseY - 26, 18, 4);
-  }
-  if (landmark.type === "portal") {
-    context.fillStyle = "#101214";
-    context.fillRect(point.x - 6, baseY - 29, 12, 15);
-  }
-  if (landmark.type === "page") {
-    context.fillStyle = "#e7dfca";
-    context.fillRect(point.x - 7, baseY - 20, 14, 15);
-    context.fillStyle = color;
-    context.fillRect(point.x - 3, baseY - 16, 6, 2);
-  }
-
-  const lightOn = (Math.floor(options.time / 5000) + index * 3) % 7 === 0;
-  if (lightOn) {
-    context.fillStyle = "#f5eedb";
-    context.fillRect(point.x - 3, baseY - Math.min(18, heights[landmark.type] - 8), 6, 5);
-  }
+  const height = heights[landmark.type];
+  const width = landmark.type === "tower" ? 18 : 22;
+  const emphasis = Math.max(Number(active), pulse);
+  drawColumn(context, point.x, baseY, width, height, landmarkColor(index), emphasis);
 
   return {
     id: landmark.id,
     x: point.x,
-    y: baseY - heights[landmark.type] / 2,
-    width: Math.max(44, width + 24),
-    height: Math.max(44, heights[landmark.type] + 30),
+    y: baseY - height,
+    width: 42,
+    height: 42,
     color: landmark.color
   };
 }
@@ -201,24 +222,12 @@ export function drawWorld(
   context.fillStyle = "#101214";
   context.fillRect(0, 0, options.width, options.height);
 
-  const layer = terrainLayer(world, options);
-  context.drawImage(layer, 0, 0, options.width, options.height);
+  drawPixelField(context, options);
+  drawTerrain(context, world, options);
 
   const landmarks = options.tabs.map((tab, index) => landmarkForTab(tab, index, options.size));
-  const rendered = landmarks
+  return landmarks
     .map((landmark, index) => ({ landmark, index }))
     .sort((a, b) => a.landmark.x + a.landmark.y - (b.landmark.x + b.landmark.y))
     .map(({ landmark, index }) => drawLandmark(context, landmark, index, options));
-
-  for (const tile of world) {
-    if (tile.terrain !== "water" || (tile.x + tile.y) % 5 !== 0) continue;
-    const point = projectTile(tile, options.metrics);
-    const wave = Math.floor(options.time / 1800 + tile.x * 2 + tile.y) % 3 === 0;
-    if (wave) {
-      context.fillStyle = "#e7dfca";
-      context.fillRect(point.x - 4, point.y - 1, 8, 2);
-    }
-  }
-
-  return rendered;
 }

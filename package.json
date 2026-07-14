@@ -24,6 +24,7 @@
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "lucide-react": "^0.468.0",
     "markdown-it": "^14.3.0",
     "markdown-it-anchor": "^9.2.0",
     "markdown-it-attrs": "^5.0.0",
