@@ -729,6 +729,8 @@ html.lang-switching .route-frame {
 }
 
 .map-node__beacon {
+  position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
   width: 42px;
@@ -742,6 +744,7 @@ html.lang-switching .route-frame {
 
 .map-node__label {
   position: absolute;
+  z-index: 2;
   top: 0;
   left: calc(100% + 8px);
   display: flex;
@@ -790,6 +793,7 @@ html.lang-switching .route-frame {
 .map-node:hover,
 .map-node:focus-visible,
 .map-node[data-active="true"] {
+  z-index: 20;
   filter: drop-shadow(0 0 12px color-mix(in srgb, var(--node-color) 52%, transparent));
 }
 

@@ -27,3 +27,6 @@ assert.match(node, /<TabIcon/, "map controls must render the controlled Lucide i
 assert.doesNotMatch(node, /zhDescription/, "map controls must not expose descriptions");
 assert.match(css, /\.map-node:hover \.map-node__label/, "hover must reveal the compact localized label");
 assert.match(css, /\.map-node__label\s*\{[\s\S]*?width:\s*0/, "labels must be collapsed at rest");
+assert.match(css, /\.map-node:hover,[\s\S]*?\.map-node\[data-active="true"\][\s\S]*?z-index:\s*20/, "active landmarks must rise above sibling nodes");
+assert.match(css, /\.map-node__beacon\s*\{[\s\S]*?position:\s*relative[\s\S]*?z-index:\s*1/, "the icon must have an explicit local layer");
+assert.match(css, /\.map-node__label\s*\{[\s\S]*?z-index:\s*2/, "the expanded title must render above its icon layer");
