@@ -52,6 +52,17 @@ export type Project = {
   body: string;
 };
 
+export type CustomPage = {
+  type: "page";
+  slug: string;
+  title: string;
+  titleZh: string;
+  titleEn: string;
+  summary: string;
+  published: boolean;
+  body: string;
+};
+
 function parseFrontmatter(raw: string) {
   const match = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (!match) return { data: {}, body: raw };
@@ -167,6 +178,19 @@ export function getProjects() {
   })).sort((a, b) => Number(b.featured) - Number(a.featured) || a.name.localeCompare(b.name));
 }
 
+export function getCustomPage(slug: string) {
+  return readCollection<CustomPage>("pages", (pageSlug, data, body) => ({
+    type: "page",
+    slug: pageSlug,
+    title: text(data.title, pageSlug),
+    titleZh: text(data.titleZh, text(data.title, pageSlug)),
+    titleEn: text(data.titleEn, text(data.title, pageSlug)),
+    summary: text(data.summary),
+    published: bool(data.published, true),
+    body
+  })).find((page) => page.slug === slug && page.published);
+}
+
 export function getBlogPost(slug: string) {
   return getBlogPosts().find((post) => post.slug === slug);
 }
@@ -256,6 +280,10 @@ const defaultRender =
   md.renderer.rules.link_open ||
   ((tokens, index, options, _env, self) => self.renderToken(tokens, index, options));
 
+const defaultImageRender =
+  md.renderer.rules.image ||
+  ((tokens, index, options, _env, self) => self.renderToken(tokens, index, options));
+
 md.renderer.rules.link_open = (tokens, index, options, env, self) => {
   const href = tokens[index].attrGet("href") || "";
   if (/^https?:\/\//.test(href)) {
@@ -263,6 +291,12 @@ md.renderer.rules.link_open = (tokens, index, options, env, self) => {
     tokens[index].attrSet("rel", "noreferrer");
   }
   return defaultRender(tokens, index, options, env, self);
+};
+
+md.renderer.rules.image = (tokens, index, options, env, self) => {
+  const src = tokens[index].attrGet("src") || "";
+  if (src.startsWith("/uploads/")) tokens[index].attrSet("src", withBasePath(src));
+  return defaultImageRender(tokens, index, options, env, self);
 };
 
 md.renderer.rules.fence = (tokens, index) => {

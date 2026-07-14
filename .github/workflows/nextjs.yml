@@ -74,7 +74,7 @@ jobs:
         run: |
           test -f out/index.html
           test -f out/404.html
-          test -f out/admin/index.html
+          test ! -f out/admin/index.html
           test -f out/rss.xml
           test -f out/sitemap.xml
       - name: Upload artifact

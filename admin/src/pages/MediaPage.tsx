@@ -1,0 +1,13 @@
+import { useEffect, useState } from "react";
+import { api } from "../api/client";
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import { StatusBanner } from "../components/StatusBanner";
+
+type Media = { name: string; path: string; bytes: number; dimensions?: { width: number; height: number }; references: string[] };
+export function MediaPage() {
+  const [items, setItems] = useState<Media[]>([]); const [error, setError] = useState(""); const [pendingDelete, setPendingDelete] = useState<Media>(); const [uploading, setUploading] = useState(false);
+  const load = () => api<{ items: Media[] }>("/media").then((data) => { setItems(data.items); setError(""); }).catch((reason) => setError(reason.message)); useEffect(() => { void load(); }, []);
+  const upload = async (file: File | null) => { if (!file) return; try { setUploading(true); const data = new FormData(); data.set("file", file); await api<Media>("/media", { method: "POST", body: data }); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "上传失败"); } finally { setUploading(false); } };
+  const remove = async () => { if (!pendingDelete) return; try { await api(`/media/${encodeURIComponent(pendingDelete.name)}`, { method: "DELETE" }); setPendingDelete(undefined); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "删除失败"); } };
+  return <section className="admin-page"><header className="page-heading"><div><p className="kicker">Uploads</p><h1>Media</h1></div><label className="button">{uploading ? "上传中" : "上传图片"}<input className="visually-hidden" type="file" accept="image/*" disabled={uploading} onChange={(event) => upload(event.target.files?.[0] || null)} /></label></header>{error && <StatusBanner tone="error">{error}</StatusBanner>}<div className="media-grid">{items.map((item) => <article key={item.name} className="media-item"><img src={item.path} alt="" /><div><strong className="truncate">{item.name}</strong><small>{item.dimensions ? `${item.dimensions.width} × ${item.dimensions.height}` : "尺寸不可读"} · {Math.ceil(item.bytes / 1024)} KB · {item.references.length} 处引用</small></div><div className="icon-actions"><button type="button" title="复制 Markdown 路径" aria-label={`复制 ${item.name} 的 Markdown 路径`} onClick={() => navigator.clipboard.writeText(`![${item.name}](${item.path})`)}>⧉</button><button type="button" title="删除图片" aria-label={`删除 ${item.name}`} onClick={() => setPendingDelete(item)}>×</button></div></article>)}{items.length === 0 && <p className="empty-state">上传目录中还没有图片。</p>}</div>{pendingDelete && <ConfirmDialog title="删除图片" message={`将永久删除 ${pendingDelete.name}。旧文章资产不会出现在此列表。`} confirmLabel="删除" onCancel={() => setPendingDelete(undefined)} onConfirm={remove} />}</section>;
+}

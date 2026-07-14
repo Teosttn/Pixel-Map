@@ -26,3 +26,5 @@ assert.match(daily, /actions\/deploy-pages@v5/);
 assert.doesNotMatch(pages, /^concurrency:/m);
 assert.match(pages, /\n  deploy:\n[\s\S]*?group: pages/);
 assert.match(pages, /actions\/upload-pages-artifact@v4/);
+assert.doesNotMatch(pages, /test -f out\/admin\/index\.html/);
+assert.match(pages, /test ! -f out\/admin\/index\.html/);

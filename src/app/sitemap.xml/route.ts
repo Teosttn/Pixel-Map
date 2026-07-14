@@ -2,7 +2,7 @@ import { getAllTags, getBlogPosts, getNewsDigests } from "@/lib/content";
 import { absoluteUrl } from "@/lib/site";
 
 export function GET() {
-  const routes = ["/", "/blog", "/news", "/projects", "/about", "/lab", "/admin"];
+  const routes = ["/", "/blog", "/news", "/projects", "/about", "/lab"];
   const blogRoutes = getBlogPosts().map((post) => `/blog/${post.slug}`);
   const newsRoutes = getNewsDigests().map((digest) => `/news/${digest.slug}`);
   const tagRoutes = getAllTags().map((tag) => `/tags/${encodeURIComponent(tag)}`);

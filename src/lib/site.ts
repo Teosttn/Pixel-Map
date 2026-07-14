@@ -1,4 +1,5 @@
 import tabsConfig from "@/content/config/tabs.json";
+import { validateTabsConfig } from "../../shared/site-config.mjs";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://pixel-map.local").replace(/\/$/, "");
@@ -15,6 +16,8 @@ export function absoluteUrl(href: string) {
   return new URL(relativeHref, `${siteUrl}/`).toString();
 }
 
+const tabs = validateTabsConfig(tabsConfig).tabs;
+
 export const siteConfig = {
   name: "Pixel-Map",
   url: siteUrl,
@@ -22,7 +25,8 @@ export const siteConfig = {
   description:
     "A pixel-styled personal map for essays, curated signals, projects, and field notes.",
   author: "Pixel Cartographer",
-  nav: tabsConfig.nav
+  tabs,
+  nav: tabs.filter((tab) => tab.visible).map(({ label, zh, href }) => ({ label, zh, href }))
 };
 
-export const mapNodes = tabsConfig.mapNodes;
+export const mapNodes = tabs.filter((tab) => tab.visible).map(({ id, label, href, map }) => ({ id, label, href, ...map }));
