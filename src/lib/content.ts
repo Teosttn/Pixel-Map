@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import hljs from "highlight.js/lib/common";
 import MarkdownIt from "markdown-it";
 import markdownItAnchor from "markdown-it-anchor";
 import markdownItAttrs from "markdown-it-attrs";
@@ -228,6 +229,11 @@ function parseFenceInfo(info: string) {
   };
 }
 
+function lineNumbers(content: string) {
+  const lineCount = Math.max(1, content.replace(/\n$/, "").split("\n").length);
+  return Array.from({ length: lineCount }, (_, index) => index + 1).join("\n");
+}
+
 const md = new MarkdownIt({
   html: true,
   linkify: true,
@@ -302,6 +308,9 @@ md.renderer.rules.image = (tokens, index, options, env, self) => {
 md.renderer.rules.fence = (tokens, index) => {
   const token = tokens[index];
   const { language, filename } = parseFenceInfo(token.info);
+  const highlighted = language && hljs.getLanguage(language)
+    ? hljs.highlight(token.content, { language, ignoreIllegals: true }).value
+    : escapeHtml(token.content);
   const figureAttributes = [
     'class="md-code-block"',
     language ? `data-language="${escapeHtml(language)}"` : "",
@@ -317,7 +326,7 @@ md.renderer.rules.fence = (tokens, index) => {
         }${language ? `<span class="md-code-block__language">${escapeHtml(language)}</span>` : ""}</figcaption>`
       : "";
 
-  return `<figure ${figureAttributes}>${caption}<pre><code${codeClass}>${escapeHtml(token.content)}</code></pre></figure>\n`;
+  return `<figure ${figureAttributes}>${caption}<div class="md-code-block__body"><pre class="md-code-block__gutter" aria-hidden="true">${lineNumbers(token.content)}</pre><pre><code${codeClass}>${highlighted}</code></pre></div></figure>\n`;
 };
 
 function legacyClassList(input: string) {
