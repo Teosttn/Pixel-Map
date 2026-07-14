@@ -109,3 +109,76 @@ exit code 0
 ## Concerns
 
 - The explicit fallback preserves the source language in `titleZh` or `summaryZh` when no translation service is available. This is intentional: it is opt-in local-development behavior and Task 4 must keep scheduled publication on the default strict path.
+
+## Review Fix: Authenticated Failure and Markdown Hardening
+
+This section supersedes the earlier statement that `allowFallback: true` could handle failed requests. Fallback is now limited to the missing-API-key branch. Once an API key is supplied, every request and response failure is propagated.
+
+### Root Cause
+
+- `summarizeItems` wrapped the entire authenticated Responses request in a `try/catch`; the catch returned fallback output whenever `allowFallback === true`, including network failures, non-OK responses, invalid JSON, missing output text, malformed summary JSON, and schema failures.
+- `renderDigest` interpolated model title, summary, comment, and source strings directly into Markdown. Removing the original URL did not stop embedded newlines, headings, link syntax, or other control characters from changing document structure.
+- Object spread preserved the original `tags` array reference, so modifying returned feed metadata could mutate caller-owned input.
+
+### TDD RED
+
+Added tests before changing production code for authenticated 503 responses, malformed model JSON, cloned `tags`, and malicious line breaks/Markdown controls. After correcting a test-only regex syntax error, ran:
+
+```text
+node --test scripts/news/digest.test.mjs
+exit code 1; tests 10; pass 6; fail 4
+
+authenticated 503 with allowFallback: true: Missing expected rejection
+malformed JSON with allowFallback: true: Missing expected rejection
+tags clone: input tags became ["tech", "mutated"]
+malicious Markdown: 4 top-level ## headings found; expected 1
+```
+
+### Implementation
+
+- Removed the authenticated-request catch/fallback path. Only a missing API key may return fallback output, and only when `allowFallback === true`.
+- Cloned `tags` in both fallback and successful `FeedItem` output paths.
+- Added a narrow `safeMarkdownText` render-boundary function: it removes only the matching original URL, folds CR/LF and repeated whitespace into one line, escapes Markdown control characters, and prevents plain `://` sequences from being auto-linked. It is applied to all model-controlled body text and the source-link label.
+- Kept `sources` frontmatter values as JSON/YAML-safe serialized original strings; the malicious-source test parses the emitted array with `JSON.parse` to verify the dynamic value remains valid.
+
+### TDD GREEN and Verification
+
+```text
+node --test scripts/news/digest.test.mjs
+exit code 0; tests 10; pass 10; fail 0
+
+npm run test:news
+exit code 0; tests 19; pass 19; fail 0
+
+node --check scripts/news/openai.mjs && node --check scripts/news/digest.mjs && node --check scripts/news/digest.test.mjs
+exit code 0
+
+git diff --check
+exit code 0
+```
+
+`npm run test:news` continues to emit the pre-existing `Unknown user config "python"` warning; it does not affect the successful exit code.
+
+### Review Self-Check
+
+- Confirmed `allowFallback: true` with a 503 response and malformed model JSON both reject, rather than returning source fallback.
+- Confirmed errors from `fetchImpl`, non-OK responses, `response.json()`, output extraction, JSON parsing, and schema validation are no longer caught by a fallback branch after authentication begins.
+- Confirmed malicious headings cannot create additional item sections, source/title link delimiters are escaped, and summary/comment text is retained as readable single-line text rather than deleted.
+- Confirmed the original item URL appears once in rendered Markdown and frontmatter dynamic source arrays remain JSON/YAML parseable.
+- Confirmed returned `tags` can be mutated without mutating input metadata.
+- No Task 4+ orchestration, content routing, or workflow files were changed.
+
+### Follow-up RED/GREEN: Empty Input Still Requires a Key
+
+Self-review found that the former early `items.length === 0` return preceded API-key validation. This contradicted the strict missing-key contract even though Task 4 can independently short-circuit a no-news run.
+
+```text
+RED: node --test --test-name-pattern="requires an API key" scripts/news/digest.test.mjs
+exit code 1
+AssertionError: Missing expected rejection for summarizeItems([], {})
+
+GREEN: node --test scripts/news/digest.test.mjs
+exit code 0; tests 10; pass 10; fail 0
+```
+
+The key check now runs before the empty-input return. Authenticated empty input still returns an empty array without an unnecessary API call.

@@ -10,8 +10,17 @@ function uniqueSources(items) {
   return [...new Set(items.map((item) => item.source).filter(Boolean))];
 }
 
-function withoutOriginalUrl(value, url) {
-  return String(value).replaceAll(url, "").replace(/[ \t]{2,}/g, " ").trim();
+function safeMarkdownText(value, originalUrl) {
+  const text = originalUrl
+    ? String(value).replaceAll(originalUrl, "")
+    : String(value);
+
+  return text
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/([\\`*_[\]()<>{}#!])/g, "\\$1")
+    .replace(/:\/\//g, ":\\//");
 }
 
 export function digestSlug(date) {
@@ -37,17 +46,17 @@ export function renderDigest({ date, items }) {
   ].join("\n");
 
   const sections = items.map((item, index) => [
-    `## ${index + 1}. ${withoutOriginalUrl(item.titleZh, item.url)} / ${withoutOriginalUrl(item.titleEn, item.url)}`,
+    `## ${index + 1}. ${safeMarkdownText(item.titleZh, item.url)} / ${safeMarkdownText(item.titleEn, item.url)}`,
     "",
-    `中文摘要：${withoutOriginalUrl(item.summaryZh, item.url)}`,
+    `中文摘要：${safeMarkdownText(item.summaryZh, item.url)}`,
     "",
-    `English summary: ${withoutOriginalUrl(item.summaryEn, item.url)}`,
+    `English summary: ${safeMarkdownText(item.summaryEn, item.url)}`,
     "",
-    `中文短评：${withoutOriginalUrl(item.commentZh, item.url)}`,
+    `中文短评：${safeMarkdownText(item.commentZh, item.url)}`,
     "",
-    `English note: ${withoutOriginalUrl(item.commentEn, item.url)}`,
+    `English note: ${safeMarkdownText(item.commentEn, item.url)}`,
     "",
-    `发布：${item.publishedAt} | 来源：[${withoutOriginalUrl(item.source, item.url) || "Source"}](${item.url})`
+    `发布：${item.publishedAt} | 来源：[${safeMarkdownText(item.source, item.url) || "Source"}](${item.url})`
   ].join("\n"));
 
   return `${frontmatter}\n\n${sections.join("\n\n")}\n`;

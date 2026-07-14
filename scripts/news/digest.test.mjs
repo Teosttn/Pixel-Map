@@ -51,6 +51,29 @@ test("summarizeItems requires an API key unless fallback is explicitly allowed",
     summarizeItems([item], { allowFallback: "true" }),
     /OPENAI_API_KEY is required/
   );
+
+  await assert.rejects(
+    summarizeItems([], {}),
+    /OPENAI_API_KEY is required/
+  );
+});
+
+test("summarizeItems does not fall back after an authenticated 5xx response", async () => {
+  const fetchImpl = async () => new Response("upstream unavailable", { status: 503 });
+
+  await assert.rejects(
+    summarizeItems([item], { apiKey: "test-key", allowFallback: true, fetchImpl }),
+    /failed with 503/
+  );
+});
+
+test("summarizeItems does not fall back after malformed model JSON", async () => {
+  const fetchImpl = async () => new Response(JSON.stringify({ output_text: "not JSON" }));
+
+  await assert.rejects(
+    summarizeItems([item], { apiKey: "test-key", allowFallback: true, fetchImpl }),
+    /valid JSON array/
+  );
 });
 
 test("summarizeItems uses Responses output text and preserves source metadata", async () => {
@@ -76,6 +99,19 @@ test("summarizeItems uses Responses output text and preserves source metadata", 
   assert.equal(request.options.headers.authorization, "Bearer test-key");
   assert.equal(JSON.parse(request.options.body).model, "test-model");
   assert.deepEqual(result, [{ ...item, ...bilingualText }]);
+});
+
+test("summarizeItems clones tags instead of sharing input metadata arrays", async () => {
+  const sourceItem = { ...item, tags: ["tech"] };
+  const fetchImpl = async () => new Response(JSON.stringify({
+    output_text: JSON.stringify([bilingualText])
+  }));
+
+  const [result] = await summarizeItems([sourceItem], { apiKey: "test-key", fetchImpl });
+  result.tags.push("mutated");
+
+  assert.deepEqual(sourceItem.tags, ["tech"]);
+  assert.deepEqual(result.tags, ["tech", "mutated"]);
 });
 
 test("summarizeItems rejects a Responses result that is not one strict JSON array", async () => {
@@ -111,5 +147,33 @@ test("renderDigest keeps the original URL to its single source link when text re
     items: [{ ...item, ...bilingualText, summaryEn: `Read ${item.url} for details.` }]
   });
 
+  assert.equal((markdown.match(/https:\/\/example\.com\/release/g) || []).length, 1);
+});
+
+test("renderDigest folds and escapes untrusted Markdown text without corrupting frontmatter", () => {
+  const maliciousSource = "Source [name](https://attacker.example)\n## forged source";
+  const markdown = renderDigest({
+    date: "2026-07-10",
+    items: [{
+      ...item,
+      ...bilingualText,
+      titleZh: "标题\n## forged title [link](https://attacker.example)",
+      titleEn: "Title *with* [brackets](https://attacker.example)",
+      summaryZh: "摘要\n## forged summary [link](https://attacker.example)",
+      summaryEn: "Summary *with* [brackets](https://attacker.example)",
+      commentZh: "短评\n> forged quote",
+      commentEn: "Comment `code` and [brackets](https://attacker.example)",
+      source: maliciousSource
+    }]
+  });
+
+  const sourceLine = markdown.split("\n").find((line) => line.startsWith("sources: "));
+  assert.deepEqual(JSON.parse(sourceLine.slice("sources: ".length)), [maliciousSource]);
+  assert.equal((markdown.match(/^## /gm) || []).length, 1);
+  assert.doesNotMatch(markdown, /\n## forged/);
+  assert.ok(markdown.includes("## 1. 标题 \\#\\# forged title \\[link\\]\\(https:\\//attacker.example\\) / Title \\*with\\* \\[brackets\\]\\(https:\\//attacker.example\\)"));
+  assert.ok(markdown.includes("中文摘要：摘要 \\#\\# forged summary \\[link\\]\\(https:\\//attacker.example\\)"));
+  assert.ok(markdown.includes("English note: Comment \\`code\\` and \\[brackets\\]\\(https:\\//attacker.example\\)"));
+  assert.ok(markdown.includes("来源：[Source \\[name\\]\\(https:\\//attacker.example\\) \\#\\# forged source](https://example.com/release)"));
   assert.equal((markdown.match(/https:\/\/example\.com\/release/g) || []).length, 1);
 });

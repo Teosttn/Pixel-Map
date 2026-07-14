@@ -7,11 +7,18 @@ const REQUIRED_TEXT_FIELDS = [
   "commentEn"
 ];
 
+function cloneFeedItem(item) {
+  return {
+    ...item,
+    ...(Array.isArray(item.tags) ? { tags: [...item.tags] } : {})
+  };
+}
+
 function fallbackItem(item) {
   const summary = String(item.summary || item.title || "").trim();
 
   return {
-    ...item,
+    ...cloneFeedItem(item),
     titleZh: item.title,
     titleEn: item.title,
     summaryZh: `原文摘要：${summary}`,
@@ -73,48 +80,44 @@ export function validateSummaryOutput(value, expectedLength) {
 export async function summarizeItems(items, options = {}) {
   const { apiKey, model = "gpt-4.1-mini", fetchImpl = fetch, allowFallback = false } = options;
   const canFallback = allowFallback === true;
-  if (items.length === 0) return [];
 
   if (!apiKey) {
     if (canFallback) return items.map(fallbackItem);
     throw new Error("OPENAI_API_KEY is required for news summarization");
   }
 
-  try {
-    const response = await fetchImpl("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${apiKey}`,
-        "content-type": "application/json"
-      },
-      body: JSON.stringify({
-        model,
-        input: [
-          {
-            role: "system",
-            content: "Summarize each technical news item bilingually. Return only one valid JSON array in the same order and length as the input. Each object must contain non-empty strings for titleZh, titleEn, summaryZh, summaryEn, commentZh, and commentEn. Do not include Markdown or any other fields. Preserve factual uncertainty and do not add facts beyond the supplied item."
-          },
-          { role: "user", content: JSON.stringify(summaryInput(items)) }
-        ],
-        temperature: 0.2
-      })
-    });
+  if (items.length === 0) return [];
 
-    if (!response.ok) {
-      throw new Error(`OpenAI summary request failed with ${response.status}: ${await response.text()}`);
-    }
+  const response = await fetchImpl("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${apiKey}`,
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      model,
+      input: [
+        {
+          role: "system",
+          content: "Summarize each technical news item bilingually. Return only one valid JSON array in the same order and length as the input. Each object must contain non-empty strings for titleZh, titleEn, summaryZh, summaryEn, commentZh, and commentEn. Do not include Markdown or any other fields. Preserve factual uncertainty and do not add facts beyond the supplied item."
+        },
+        { role: "user", content: JSON.stringify(summaryInput(items)) }
+      ],
+      temperature: 0.2
+    })
+  });
 
-    const summaries = validateSummaryOutput(
-      parseSummaryArray(responseText(await response.json())),
-      items.length
-    );
-
-    return items.map((item, index) => {
-      const text = summaries[index];
-      return Object.assign({}, item, ...REQUIRED_TEXT_FIELDS.map((key) => ({ [key]: text[key].trim() })));
-    });
-  } catch (error) {
-    if (canFallback) return items.map(fallbackItem);
-    throw error;
+  if (!response.ok) {
+    throw new Error(`OpenAI summary request failed with ${response.status}: ${await response.text()}`);
   }
+
+  const summaries = validateSummaryOutput(
+    parseSummaryArray(responseText(await response.json())),
+    items.length
+  );
+
+  return items.map((item, index) => {
+    const text = summaries[index];
+    return Object.assign(cloneFeedItem(item), ...REQUIRED_TEXT_FIELDS.map((key) => ({ [key]: text[key].trim() })));
+  });
 }
