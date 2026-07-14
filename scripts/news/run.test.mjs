@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { access, mkdtemp, readFile, readdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { parseArguments } from "../fetch-news.mjs";
+import { parseArguments, writeGithubOutput } from "../fetch-news.mjs";
 import { runDailyDigest } from "./run.mjs";
 
 async function createFixture() {
@@ -120,4 +120,16 @@ test("fetch-news CLI options require explicit fallback opt-in", () => {
   assert.deepEqual(parseArguments([]), { force: false, allowSourceFallback: false });
   assert.deepEqual(parseArguments(["--force", "--allow-source-fallback"]), { force: true, allowSourceFallback: true });
   assert.throws(() => parseArguments(["--unknown"]), /Unknown argument/);
+});
+
+test("fetch-news writes machine-readable change metadata to GITHUB_OUTPUT", async () => {
+  const root = await createFixture();
+  const output = join(root, "github-output");
+
+  await writeGithubOutput({ changed: true, digestPath: "src/content/news/2026-07-10-daily-digest.md" }, output);
+
+  assert.equal(
+    await readFile(output, "utf8"),
+    "changed=true\ndigest_path=src/content/news/2026-07-10-daily-digest.md\n"
+  );
 });

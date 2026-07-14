@@ -19,6 +19,11 @@ function outputPath(path) {
   return path ? relative(process.cwd(), path) : "";
 }
 
+export async function writeGithubOutput(summary, output = process.env.GITHUB_OUTPUT) {
+  if (!output) return;
+  await appendFile(output, `changed=${summary.changed}\ndigest_path=${summary.digestPath}\n`, "utf8");
+}
+
 export async function main(argumentsList = process.argv.slice(2)) {
   const options = parseArguments(argumentsList);
   const digest = await runDailyDigest(options);
@@ -34,13 +39,7 @@ export async function main(argumentsList = process.argv.slice(2)) {
   };
 
   console.log(JSON.stringify(summary));
-  if (process.env.GITHUB_OUTPUT) {
-    await appendFile(
-      process.env.GITHUB_OUTPUT,
-      `changed=${changed}\ndigest_path=${summary.digestPath}\n`,
-      "utf8"
-    );
-  }
+  await writeGithubOutput(summary);
 
   return summary;
 }
