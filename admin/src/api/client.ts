@@ -2,6 +2,8 @@ export type ContentCollection = "blog" | "news" | "projects" | "pages";
 export type ContentRecord = { collection: ContentCollection; slug: string; path: string; metadata: Record<string, string | boolean | number | string[]>; body: string; version: string };
 export type TabMap = { glyph: string; landmark: string; x: number; y: number; color: string; title: string; zhTitle: string; description: string; zhDescription: string };
 export type Tab = { id: string; kind: "built-in" | "page" | "external"; label: string; zh: string; href: string; visible: boolean; order: number; map: TabMap };
+export type PublishStatus = { branch: string; remote: string; targetBranch: "main"; publishableFiles: string[]; blockedFiles: string[]; canPublish: boolean; blockers: string[] };
+export type PublishResult = { ok: true; commit: string; publishedFiles: string[] };
 
 type ApiBody = { error?: string; code?: string; [key: string]: unknown } | null;
 

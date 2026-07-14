@@ -46,25 +46,9 @@ test("validateSummaryOutput rejects missing records and blank bilingual fields",
   );
 });
 
-test("summarizeItems requires an API key unless fallback is explicitly allowed", async () => {
+test("summarizeItems always requires an API key and has no fake translation fallback", async () => {
   await assert.rejects(
     summarizeItems([item], { fetchImpl: async () => { throw new Error("must not fetch"); } }),
-    /OPENAI_API_KEY is required/
-  );
-
-  const fallback = await summarizeItems([item], { allowFallback: true });
-  assert.deepEqual(fallback[0], {
-    ...item,
-    titleZh: item.title,
-    titleEn: item.title,
-    summaryZh: `原文摘要：${item.summary}`,
-    summaryEn: item.summary,
-    commentZh: "已保留原文链接，建议打开来源阅读全文并核对上下文。",
-    commentEn: "Original link retained for source verification."
-  });
-
-  await assert.rejects(
-    summarizeItems([item], { allowFallback: "true" }),
     /OPENAI_API_KEY is required/
   );
 
@@ -83,12 +67,12 @@ test("summarizeItems does not fall back after an authenticated 5xx response", as
   );
 });
 
-test("summarizeItems does not fall back after malformed model JSON", async () => {
+test("summarizeItems aborts after malformed model JSON also fails repair", async () => {
   const fetchImpl = async () => new Response(JSON.stringify({ output_text: "not JSON" }));
 
   await assert.rejects(
     summarizeItems([item], { apiKey: "test-key", allowFallback: true, fetchImpl }),
-    /valid JSON array/
+    /after repair: OpenAI response must be a valid JSON array/
   );
 });
 
@@ -119,7 +103,7 @@ test("summarizeItems propagates every authenticated response pipeline error", as
 
   for (const scenario of cases) {
     await assert.rejects(
-      summarizeItems([item], { apiKey: "test-key", allowFallback: true, fetchImpl: scenario.fetchImpl }),
+      summarizeItems([item], { apiKey: "test-key", fetchImpl: scenario.fetchImpl }),
       scenario.error,
       scenario.name
     );
@@ -169,7 +153,7 @@ test("summarizeItems rejects a Responses result that is not one strict JSON arra
 
   await assert.rejects(
     summarizeItems([item], { apiKey: "test-key", fetchImpl }),
-    /valid JSON array/
+    /after repair: OpenAI response must be a valid JSON array/
   );
 });
 

@@ -35,8 +35,8 @@ async function readUpload(req) {
 
 function apiError(error) {
   if (error?.code === "ENOENT") return [404, "Content was not found"];
-  if (/changed on disk|being updated/.test(error?.message || "")) return [409, error.message];
-  if (/Invalid|already exists|exceeds|JSON|Only image|Image upload|Expected multipart|Upload requires/.test(error?.message || "")) return [400, error.message];
+  if (/changed on disk|being updated|仅允许从 main|远端 main|范围之外|没有可发布|未配置 origin/.test(error?.message || "")) return [409, error.message];
+  if (/Invalid|already exists|exceeds|JSON|Only image|Image upload|Expected multipart|Upload requires|提交说明/.test(error?.message || "")) return [400, error.message];
   return [500, "Local admin request failed"];
 }
 
@@ -70,8 +70,11 @@ export function createApiHandler({ root, sessionGuard }) {
       return true;
     }
     if (parts[1] === "git") {
+      if (parts[2] === "publish" && req.method === "POST" && !sessionGuard(req, res)) return true;
       try {
         if (parts[2] === "status" && req.method === "GET") send(res, 200, await git.status());
+        else if (parts[2] === "publish-status" && req.method === "GET") send(res, 200, await git.publishStatus());
+        else if (parts[2] === "publish" && req.method === "POST") { const body = await readJson(req); send(res, 200, await git.publish(body)); }
         else send(res, 405, { error: "Unsupported git operation" });
       } catch (error) { const [status, message] = apiError(error); send(res, status, { error: message }); }
       return true;

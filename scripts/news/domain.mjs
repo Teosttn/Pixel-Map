@@ -30,7 +30,7 @@ export function selectFreshItems(items, options) {
   const minimum = options.now.getTime() - options.maxAgeHours * 60 * 60 * 1000;
   const urls = new Set();
   const titles = new Set();
-  return items
+  const ranked = items
     .filter((item) => {
       const timestamp = new Date(item.publishedAt).getTime();
       return Number.isFinite(timestamp) && timestamp >= minimum && timestamp <= options.now.getTime() + 15 * 60 * 1000;
@@ -48,6 +48,34 @@ export function selectFreshItems(items, options) {
       urls.add(item.url);
       titles.add(title);
       return true;
-    })
-    .slice(0, options.maxItems);
+    });
+
+  const selected = [];
+  const selectedUrls = new Set();
+  const sourceCounts = new Map();
+  const maxPerSource = Number.isFinite(options.maxPerSource) ? options.maxPerSource : options.maxItems;
+  const take = (item) => {
+    if (selected.length >= options.maxItems || selectedUrls.has(item.url)) return false;
+    const sourceCount = sourceCounts.get(item.source) || 0;
+    if (sourceCount >= maxPerSource) return false;
+    selected.push(item);
+    selectedUrls.add(item.url);
+    sourceCounts.set(item.source, sourceCount + 1);
+    return true;
+  };
+
+  for (const [group, requested] of Object.entries(options.groupQuotas || {})) {
+    let groupCount = 0;
+    for (const item of ranked) {
+      if (item.group === group && take(item)) groupCount += 1;
+      if (groupCount >= requested || selected.length >= options.maxItems) break;
+    }
+  }
+
+  for (const item of ranked) {
+    if (selected.length >= options.maxItems) break;
+    take(item);
+  }
+
+  return selected;
 }

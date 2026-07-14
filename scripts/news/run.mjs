@@ -11,8 +11,8 @@ async function readJsonAsync(path, fallback) {
   return JSON.parse(await readFile(path, "utf8"));
 }
 
-function result(status, date, path, fetchedCount, selectedCount, failures) {
-  return { status, date, path, fetchedCount, selectedCount, failures };
+function result(status, date, path, fetchedCount, selectedCount, failures, sourceHealth = []) {
+  return { status, date, path, fetchedCount, selectedCount, failures, sourceHealth };
 }
 
 function stateWithUrls(state, items, now) {
@@ -56,24 +56,26 @@ export async function runDailyDigest(options = {}) {
     throw new Error("all configured news sources failed");
   }
 
-  const selected = selectFreshItems(fetched.items || [], {
+  const selectItems = dependencies.selectFreshItems || selectFreshItems;
+  const selected = selectItems(fetched.items || [], {
     now,
     maxAgeHours: config.maxAgeHours ?? 72,
     maxItems: config.maxItemsPerDigest ?? 8,
     seenUrls: new Set((state.urls || []).map((url) => String(url).toLowerCase())),
-    topicKeywords: config.topicKeywords || []
+    topicKeywords: config.topicKeywords || [],
+    maxPerSource: config.maxPerSource ?? 2,
+    groupQuotas: config.groupQuotas || {}
   });
 
   if (selected.length === 0) {
-    return result("no-fresh-items", date, digestPath, (fetched.items || []).length, 0, failures);
+    return result("no-fresh-items", date, digestPath, (fetched.items || []).length, 0, failures, fetched.sourceHealth || []);
   }
 
   const summarizeItems = dependencies.summarizeItems || summarizeConfiguredItems;
   const items = await summarizeItems(selected, {
     apiKey: options.apiKey || process.env.OPENAI_API_KEY,
     model: config.openAiModel,
-    fetchImpl: dependencies.openAiFetchImpl || options.openAiFetchImpl || fetch,
-    allowFallback: options.allowSourceFallback === true
+    fetchImpl: dependencies.openAiFetchImpl || options.openAiFetchImpl || fetch
   });
   const digest = renderDigest({ date, items });
   const nextState = stateWithUrls(state, selected, now);
@@ -94,5 +96,5 @@ export async function runDailyDigest(options = {}) {
     throw error;
   }
 
-  return result("published", date, digestPath, (fetched.items || []).length, selected.length, failures);
+  return result("published", date, digestPath, (fetched.items || []).length, selected.length, failures, fetched.sourceHealth || []);
 }
