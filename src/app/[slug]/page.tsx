@@ -4,6 +4,8 @@ import { Bilingual } from "@/components/content/Bilingual";
 import { getCustomPage, markdownToHtml } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   const pages = siteConfig.tabs.filter((tab) => tab.kind === "page" && tab.visible).map((tab) => ({ slug: tab.href.slice(1) }));
   return pages.length ? pages : [{ slug: "__pixel-map-unconfigured" }];

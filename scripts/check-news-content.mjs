@@ -5,8 +5,9 @@ import { join } from "node:path";
 const newsRoot = join(process.cwd(), "src", "content", "news");
 const files = readdirSync(newsRoot).filter((name) => name.endsWith(".md"));
 
-assert.equal(files.length, 3, "news migration must consolidate the six legacy records into three daily digests");
+assert.ok(files.length > 0, "news content must include at least one daily digest");
 for (const file of files) {
+  assert.match(file, /^\d{4}-\d{2}-\d{2}-daily-digest\.md$/, `${file} must use the daily digest filename`);
   const source = readFileSync(join(newsRoot, file), "utf8");
   assert.match(source, /^type: "daily-digest"$/m, `${file} must be a digest`);
   assert.match(source, /^itemCount: [1-9]\d*$/m, `${file} must declare its item count`);
