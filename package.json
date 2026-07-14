@@ -12,6 +12,9 @@
     "test:news": "node --test scripts/news/*.test.mjs",
     "test:content": "node scripts/check-news-content.mjs",
     "test:workflows": "node scripts/check-workflows.mjs",
+    "test:map": "node scripts/check-isometric-map.mjs",
+    "test:motion": "node scripts/check-route-transitions.mjs",
+    "test:visual-motion": "node scripts/check-visual-motion.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

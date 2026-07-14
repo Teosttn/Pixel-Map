@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { MotionRuntime } from "@/components/motion/MotionRuntime";
 import { RouteFrame } from "@/components/motion/RouteFrame";
+import { TransitionProvider } from "@/components/motion/TransitionProvider";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { siteConfig } from "@/lib/site";
 
@@ -23,11 +24,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN" data-language="zh">
       <body>
-        <div className="site-shell">
+        <TransitionProvider>
           <SiteHeader />
           <RouteFrame>{children}</RouteFrame>
           <MotionRuntime />
-        </div>
+        </TransitionProvider>
       </body>
     </html>
   );

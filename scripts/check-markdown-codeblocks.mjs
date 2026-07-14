@@ -8,6 +8,8 @@ assert.doesNotMatch(
   /querySelectorAll\(\s*["'`][^"'`]*\.prose/,
   "Markdown article bodies must not be hidden by the reveal observer"
 );
+assert.match(motionRuntime, /\.article-list > \*/);
+assert.match(motionRuntime, /\.timeline-item/);
 
 const articleHtml = readFileSync(
   join(process.cwd(), "out", "blog", "electron-vue-intro", "index.txt"),

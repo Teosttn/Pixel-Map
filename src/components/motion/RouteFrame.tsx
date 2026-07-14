@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 export function RouteFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   return (
-    <div className="route-frame" key={pathname}>
+    <div className="route-frame" data-route-path={pathname}>
       {children}
     </div>
   );

@@ -1,110 +1,105 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { createWorld, type MapTab } from "./isometric";
+import { drawWorld, type RenderedLandmark } from "./isometric-renderer";
 
-export function PixelMapCanvas() {
+export type PixelMapCanvasProps = {
+  tabs: MapTab[];
+  activeId: string | null;
+  pointer: { x: number; y: number } | null;
+  onLayout?: (landmarks: RenderedLandmark[]) => void;
+};
+
+const WORLD_SIZE = 14;
+
+export function PixelMapCanvas({ tabs, activeId, pointer, onLayout }: PixelMapCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const inputsRef = useRef({ activeId, pointer, onLayout });
+  const layoutRef = useRef("");
+  const tabKey = tabs.map((tab) => tab.id).join(":");
+  const world = useMemo(() => createWorld(2907, tabs, WORLD_SIZE), [tabs]);
+
+  inputsRef.current = { activeId, pointer, onLayout };
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const context = canvas.getContext("2d");
     if (!context) return;
 
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let frame = 0;
-    let raf = 0;
     let lastDraw = 0;
-    let pointer = { x: 0.5, y: 0.45, activeAt: 0 };
+    let hidden = document.hidden;
 
-    const resize = () => {
-      const ratio = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.floor(canvas.clientWidth * ratio);
-      canvas.height = Math.floor(canvas.clientHeight * ratio);
-      context.setTransform(ratio, 0, 0, ratio, 0, 0);
-    };
-
-    const draw = (now = performance.now()) => {
-      if (now - lastDraw < 42) {
-        raf = requestAnimationFrame(draw);
-        return;
-      }
-      lastDraw = now;
+    const render = (now = performance.now()) => {
+      if (hidden) return;
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
-      const tile = width < 700 ? 18 : 26;
-      const pointerActive = now - pointer.activeAt < 1400;
-      context.clearRect(0, 0, width, height);
-      context.fillStyle = "#101214";
-      context.fillRect(0, 0, width, height);
-
-      const palette = [
-        "122, 203, 121",
-        "97, 199, 212",
-        "242, 184, 75",
-        "226, 103, 115",
-        "139, 123, 216",
-        "231, 223, 202"
-      ];
-
-      for (let y = 0; y < height; y += tile) {
-        for (let x = 0; x < width; x += tile) {
-          const px = x / width - pointer.x;
-          const py = y / height - pointer.y;
-          const distance = Math.sqrt(px * px + py * py);
-          const hoverPulse = pointerActive ? Math.max(0, 1 - distance * 4.8) : 0;
-          const seed = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
-          const rareBlink = Math.sin(now * 0.00072 + seed * 18) > 0.997 ? 1 : 0;
-          const paletteIndex = Math.abs(Math.floor((x / tile) * 3 + (y / tile) * 5 + seed * palette.length)) % palette.length;
-          const alpha = 0.026 + hoverPulse * 0.18 + rareBlink * 0.2;
-          const block = Math.max(3, tile * (rareBlink ? 0.48 : hoverPulse > 0.1 ? 0.42 : 0.28));
-          context.fillStyle = `rgba(${palette[paletteIndex]}, ${Math.min(alpha, 0.32)})`;
-          context.fillRect(x, y, block, block);
-        }
+      if (!width || !height) return;
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      const targetWidth = Math.floor(width * ratio);
+      const targetHeight = Math.floor(height * ratio);
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
       }
-
-      const signals = [
-        [0.29, 0.46, "122, 203, 121"],
-        [0.63, 0.33, "97, 199, 212"],
-        [0.56, 0.63, "242, 184, 75"],
-        [0.78, 0.5, "226, 103, 115"],
-        [0.42, 0.25, "139, 123, 216"]
-      ];
-
-      for (const [sx, sy, rgb] of signals) {
-        const x = Number(sx) * width;
-        const y = Number(sy) * height;
-        const radius = 20 + Math.sin(now * 0.0008 + x) * 4;
-        context.fillStyle = `rgba(${rgb}, ${pointerActive ? 0.12 : 0.07})`;
-        context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
-        context.fillStyle = `rgba(${rgb}, ${pointerActive ? 0.42 : 0.26})`;
-        context.fillRect(x - 5, y - 5, 10, 10);
-      }
-
-      frame += 1;
-      if (!reduced) raf = requestAnimationFrame(draw);
-    };
-
-    const move = (event: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      pointer = {
-        x: (event.clientX - rect.left) / rect.width,
-        y: (event.clientY - rect.top) / rect.height,
-        activeAt: performance.now()
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      const tileWidth = Math.max(24, Math.min(62, (width * 0.8) / (WORLD_SIZE - 1)));
+      const metrics = {
+        originX: width / 2,
+        originY: Math.max(92, height * 0.19),
+        tileWidth,
+        tileHeight: Math.round(tileWidth / 2),
+        levelHeight: Math.max(7, Math.round(tileWidth * 0.22))
       };
+      const inputs = inputsRef.current;
+      const layout = drawWorld(context, world, {
+        width,
+        height,
+        size: WORLD_SIZE,
+        metrics,
+        tabs,
+        activeId: inputs.activeId,
+        pointer: inputs.pointer,
+        time: reduced ? 0 : now,
+        devicePixelRatio: ratio
+      });
+      const signature = layout.map((landmark) => `${landmark.id}:${Math.round(landmark.x)}:${Math.round(landmark.y)}`).join("|");
+      if (signature !== layoutRef.current) {
+        layoutRef.current = signature;
+        inputs.onLayout?.(layout);
+      }
     };
 
-    resize();
-    draw();
-    window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", move);
+    const tick = (now: number) => {
+      if (now - lastDraw >= 33) {
+        lastDraw = now;
+        render(now);
+      }
+      if (!reduced && !hidden) frame = window.requestAnimationFrame(tick);
+    };
 
+    const observer = new ResizeObserver(() => render());
+    observer.observe(canvas);
+    const onVisibilityChange = () => {
+      hidden = document.hidden;
+      if (!hidden) {
+        render();
+        if (!reduced) frame = window.requestAnimationFrame(tick);
+      }
+    };
+
+    render();
+    if (!reduced) frame = window.requestAnimationFrame(tick);
+    document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("pointermove", move);
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.cancelAnimationFrame(frame);
     };
-  }, []);
+  }, [tabKey, tabs, world]);
 
   return <canvas className="pixel-map-canvas" ref={canvasRef} aria-hidden="true" />;
 }
