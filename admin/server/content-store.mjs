@@ -8,6 +8,11 @@ function versionFor(bytes, modifiedAt) {
   return createHash("sha256").update(bytes).update(String(modifiedAt)).digest("hex");
 }
 
+function normalizedDate(value) {
+  const timestamp = Date.parse(String(value || ""));
+  return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
+}
+
 async function readRecord(root, collection, slug) {
   const path = resolveCollectionPath(root, collection, slug);
   const [bytes, info] = await Promise.all([readFile(path), stat(path)]);
@@ -44,7 +49,7 @@ export function createContentStore(root) {
       const directory = resolveCollectionRoot(root, collection);
       const files = await readdir(directory, { withFileTypes: true }).catch((error) => error.code === "ENOENT" ? [] : Promise.reject(error));
       const records = await Promise.all(files.filter((file) => file.isFile() && file.name.endsWith(".md")).map((file) => readRecord(root, collection, file.name.slice(0, -3))));
-      return records.sort((left, right) => right.slug.localeCompare(left.slug));
+      return records.sort((left, right) => normalizedDate(right.metadata.date) - normalizedDate(left.metadata.date) || right.slug.localeCompare(left.slug));
     },
     read(collection, slug) {
       return readRecord(root, collection, slug);
@@ -74,12 +79,22 @@ export function createContentStore(root) {
         return readRecord(root, collection, slug);
       });
     },
-    async delete(collection, slug, version) {
+    async softDelete(collection, slug, version) {
       const path = resolveCollectionPath(root, collection, slug);
       return withWriteLock(path, async () => {
         const current = await readRecord(root, collection, slug);
         if (current.version !== version) throw new Error("Content changed on disk; reload before deleting");
-        await unlink(path);
+        await atomicReplace(path, serializeFrontmatter({ ...current.metadata, deleted: true, published: false }, current.body));
+        return readRecord(root, collection, slug);
+      });
+    },
+    async restore(collection, slug, version) {
+      const path = resolveCollectionPath(root, collection, slug);
+      return withWriteLock(path, async () => {
+        const current = await readRecord(root, collection, slug);
+        if (current.version !== version) throw new Error("Content changed on disk; reload before restoring");
+        await atomicReplace(path, serializeFrontmatter({ ...current.metadata, deleted: false, published: false }, current.body));
+        return readRecord(root, collection, slug);
       });
     },
     collections: COLLECTIONS

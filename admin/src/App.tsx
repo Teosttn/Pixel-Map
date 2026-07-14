@@ -5,7 +5,6 @@ import { ContentEditorPage } from "./pages/ContentEditorPage";
 import { ContentListPage } from "./pages/ContentListPage";
 import { OverviewPage } from "./pages/OverviewPage";
 import { MediaPage } from "./pages/MediaPage";
-import { PublishPage } from "./pages/PublishPage";
 import { TabsPage } from "./pages/TabsPage";
 
 export function App() {
@@ -18,7 +17,6 @@ export function App() {
   else if (pathname === "/tabs") page = <TabsPage />;
   else if (pathname === "/content") page = <ContentListPage navigate={navigate} />;
   else if (pathname === "/media") page = <MediaPage />;
-  else if (pathname === "/publish") page = <PublishPage />;
   else if (content) page = <ContentEditorPage collection={content[1] as ContentCollection} slug={content[2]} isDraft={new URLSearchParams(window.location.search).get("draft") === "1"} navigate={navigate} />;
   return <AdminShell pathname={pathname} navigate={navigate}>{page}</AdminShell>;
 }

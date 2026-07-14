@@ -45,7 +45,6 @@ export function createApiHandler({ root, sessionGuard }) {
   const tabs = createTabsStore(root);
   const media = createMediaStore(root);
   const git = createGitService(root);
-  let lastValidation;
   return async (req, res) => {
     const url = new URL(req.url || "/", "http://127.0.0.1");
     const parts = url.pathname.split("/").filter(Boolean);
@@ -56,7 +55,7 @@ export function createApiHandler({ root, sessionGuard }) {
         const [blog, news, projects, pages, status] = await Promise.all([store.list("blog"), store.list("news"), store.list("projects"), store.list("pages"), git.status()]);
         const latestDigest = news.map((item) => String(item.metadata.date || item.slug)).sort().at(-1);
         const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(new Date());
-        send(res, 200, { counts: { blog: blog.length, news: news.length, projects: projects.length, pages: pages.length }, latestDigest, todayDigest: latestDigest === today, ...status, validation: lastValidation && { ok: lastValidation.ok, message: lastValidation.message } });
+        send(res, 200, { counts: { blog: blog.length, news: news.length, projects: projects.length, pages: pages.length }, latestDigest, todayDigest: latestDigest === today, ...status });
       } catch (error) { const [status, message] = apiError(error); send(res, status, { error: message }); }
       return true;
     }
@@ -71,11 +70,8 @@ export function createApiHandler({ root, sessionGuard }) {
       return true;
     }
     if (parts[1] === "git") {
-      if (req.method !== "GET" && !sessionGuard(req, res)) return true;
       try {
         if (parts[2] === "status" && req.method === "GET") send(res, 200, await git.status());
-        else if (parts[2] === "validate" && req.method === "POST") { lastValidation = await git.validateSite(); send(res, lastValidation.ok ? 200 : 422, lastValidation); }
-        else if (parts[2] === "publish" && req.method === "POST") send(res, 201, await git.publishSelection(await readJson(req)));
         else send(res, 405, { error: "Unsupported git operation" });
       } catch (error) { const [status, message] = apiError(error); send(res, status, { error: message }); }
       return true;
@@ -100,9 +96,10 @@ export function createApiHandler({ root, sessionGuard }) {
       const slug = parts[3];
       if (req.method === "GET" && !slug) send(res, 200, { items: await store.list(collection) });
       else if (req.method === "GET") send(res, 200, await store.read(collection, slug));
+      else if (req.method === "POST" && slug && parts[4] === "restore") { const body = await readJson(req); send(res, 200, await store.restore(collection, slug, body.version)); }
       else if (req.method === "POST" && collection) { const body = await readJson(req); send(res, 201, await store.create(collection, body.slug, body)); }
       else if (req.method === "PUT" && slug) { const body = await readJson(req); send(res, 200, await store.update(collection, slug, body)); }
-      else if (req.method === "DELETE" && slug) { const body = await readJson(req); await store.delete(collection, slug, body.version); send(res, 204, {}); }
+      else if (req.method === "DELETE" && slug) { const body = await readJson(req); send(res, 200, await store.softDelete(collection, slug, body.version)); }
       else send(res, 405, { error: "Unsupported content operation" });
     } catch (error) {
       const [status, message] = apiError(error);

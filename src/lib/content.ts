@@ -21,6 +21,7 @@ export type BlogPost = {
   category: string;
   readingTime: string;
   published: boolean;
+  deleted: boolean;
   body: string;
 };
 
@@ -35,6 +36,7 @@ export type NewsDigest = {
   summaryEn: string;
   tags: string[];
   published: boolean;
+  deleted: boolean;
   itemCount: number;
   sources: string[];
   body: string;
@@ -50,6 +52,8 @@ export type Project = {
   demoUrl?: string;
   repoUrl?: string;
   featured: boolean;
+  published: boolean;
+  deleted: boolean;
   body: string;
 };
 
@@ -61,6 +65,7 @@ export type CustomPage = {
   titleEn: string;
   summary: string;
   published: boolean;
+  deleted: boolean;
   body: string;
 };
 
@@ -138,9 +143,10 @@ export function getBlogPosts() {
     category: text(data.category, "Notes"),
     readingTime: readingTime(body),
     published: bool(data.published, true),
+    deleted: bool(data.deleted),
     body
   }))
-    .filter((post) => post.published)
+    .filter((post) => post.published && !post.deleted)
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
@@ -156,11 +162,12 @@ export function getNewsDigests() {
     summaryEn: text(data.summaryEn),
     tags: list(data.tags),
     published: bool(data.published, true),
+    deleted: bool(data.deleted),
     itemCount: number(data.itemCount),
     sources: list(data.sources),
     body
   }))
-    .filter((digest) => digest.published)
+    .filter((digest) => digest.published && !digest.deleted)
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
@@ -175,8 +182,10 @@ export function getProjects() {
     demoUrl: text(data.demoUrl) || undefined,
     repoUrl: text(data.repoUrl) || undefined,
     featured: bool(data.featured),
+    published: bool(data.published, true),
+    deleted: bool(data.deleted),
     body
-  })).sort((a, b) => Number(b.featured) - Number(a.featured) || a.name.localeCompare(b.name));
+  })).filter((project) => project.published && !project.deleted).sort((a, b) => Number(b.featured) - Number(a.featured) || a.name.localeCompare(b.name));
 }
 
 export function getCustomPage(slug: string) {
@@ -188,8 +197,9 @@ export function getCustomPage(slug: string) {
     titleEn: text(data.titleEn, text(data.title, pageSlug)),
     summary: text(data.summary),
     published: bool(data.published, true),
+    deleted: bool(data.deleted),
     body
-  })).find((page) => page.slug === slug && page.published);
+  })).find((page) => page.slug === slug && page.published && !page.deleted);
 }
 
 export function getBlogPost(slug: string) {

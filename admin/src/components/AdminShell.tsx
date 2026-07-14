@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react";
 
 const links = [
-  ["/", "Overview"], ["/tabs", "Tabs"], ["/content", "Content"], ["/media", "Media"], ["/publish", "Publish"]
+  ["/", "Overview"], ["/tabs", "Tabs"], ["/content", "Content"], ["/media", "Media"]
 ];
 
 export function AdminShell({ children, pathname, navigate }: PropsWithChildren<{ pathname: string; navigate: (path: string) => void }>) {
