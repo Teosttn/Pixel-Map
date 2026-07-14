@@ -3,14 +3,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { canonicalUrl, selectFreshItems, shanghaiDate } from "./domain.mjs";
 
-test("test:news retains legacy validation until the migration completes", () => {
+test("test:news uses only the modular node tests after the monolith migration", () => {
   const packageJson = JSON.parse(
     readFileSync(new URL("../../package.json", import.meta.url), "utf8")
   );
 
   assert.equal(
     packageJson.scripts["test:news"],
-    "node scripts/check-news-bot.mjs && node --test scripts/news/*.test.mjs"
+    "node --test scripts/news/*.test.mjs"
   );
 });
 

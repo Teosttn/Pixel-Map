@@ -1,5 +1,8 @@
 {
-  "maxItemsPerRun": 5,
+  "maxItemsPerDigest": 8,
+  "maxAgeHours": 72,
+  "fetchAttempts": 2,
+  "fetchTimeoutMs": 10000,
   "openAiModel": "gpt-4.1-mini",
   "topicKeywords": [
     "AI",

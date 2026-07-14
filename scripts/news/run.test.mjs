@@ -1,0 +1,123 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { access, mkdtemp, readFile, readdir, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { parseArguments } from "../fetch-news.mjs";
+import { runDailyDigest } from "./run.mjs";
+
+async function createFixture() {
+  const root = await mkdtemp(join(tmpdir(), "pixel-map-news-"));
+  await Promise.all([
+    writeFile(join(root, "config-placeholder"), "", "utf8"),
+    writeFile(join(root, "news-placeholder"), "", "utf8")
+  ]);
+  return root;
+}
+
+const config = {
+  maxItemsPerDigest: 8,
+  maxAgeHours: 72,
+  fetchAttempts: 2,
+  fetchTimeoutMs: 10_000,
+  topicKeywords: [],
+  sources: [{ name: "Example", url: "https://example.com/feed" }]
+};
+
+const item = {
+  title: "Release",
+  url: "https://example.com/a",
+  summary: "Details",
+  publishedAt: "2026-07-10T00:00:00.000Z",
+  source: "Example",
+  tags: ["tech"],
+  weight: 1
+};
+
+const summarizedItem = {
+  titleZh: "发布",
+  titleEn: "Release",
+  summaryZh: "摘要",
+  summaryEn: "Summary",
+  commentZh: "短评",
+  commentEn: "Note"
+};
+
+test("runDailyDigest publishes once and makes the Shanghai catch-up run a no-op", async () => {
+  const root = await createFixture();
+  const dependencies = {
+    now: new Date("2026-07-10T00:30:00Z"),
+    fetchSources: async () => ({ items: [item], failures: [] }),
+    summarizeItems: async (items) => items.map((entry) => ({ ...entry, ...summarizedItem }))
+  };
+
+  const first = await runDailyDigest({ root, config, state: { urls: ["https://history.example/kept"] }, dependencies });
+  const second = await runDailyDigest({ root, config, dependencies });
+  const state = JSON.parse(await readFile(join(root, "config", "news-seen.json"), "utf8"));
+
+  assert.equal(first.status, "published");
+  assert.equal(second.status, "already-published");
+  assert.equal(first.date, "2026-07-10");
+  assert.equal(state.lastPublishedDate, "2026-07-10");
+  assert.deepEqual(state.urls, ["https://example.com/a", "https://history.example/kept"]);
+  assert.match(await readFile(first.path, "utf8"), /^type: "daily-digest"$/m);
+});
+
+test("runDailyDigest throws without writing when every configured source fails", async () => {
+  const root = await createFixture();
+
+  await assert.rejects(
+    runDailyDigest({
+      root,
+      config,
+      state: { urls: [] },
+      dependencies: {
+        now: new Date("2026-07-10T00:30:00Z"),
+        fetchSources: async () => ({ items: [], failures: [{ source: "Example", message: "offline" }] }),
+        summarizeItems: async () => []
+      }
+    }),
+    /all configured news sources failed/
+  );
+
+  await assert.rejects(access(join(root, "news", "2026-07-10-daily-digest.md")));
+  await assert.rejects(access(join(root, "config", "news-seen.json")));
+});
+
+test("runDailyDigest leaves digest and state untouched when no fresh items remain", async () => {
+  const root = await createFixture();
+  const result = await runDailyDigest({
+    root,
+    config,
+    state: { urls: [item.url] },
+    dependencies: {
+      now: new Date("2026-07-10T00:30:00Z"),
+      fetchSources: async () => ({ items: [item], failures: [] }),
+      summarizeItems: async () => { throw new Error("must not summarize"); }
+    }
+  });
+
+  assert.equal(result.status, "no-fresh-items");
+  await assert.rejects(access(join(root, "news", "2026-07-10-daily-digest.md")));
+  await assert.rejects(access(join(root, "config", "news-seen.json")));
+});
+
+test("runDailyDigest removes temporary files after a write failure", async () => {
+  const root = await createFixture();
+  const dependencies = {
+    now: new Date("2026-07-10T00:30:00Z"),
+    fetchSources: async () => ({ items: [item], failures: [] }),
+    summarizeItems: async (items) => items.map((entry) => ({ ...entry, ...summarizedItem })),
+    rename: async () => { throw new Error("disk unavailable"); }
+  };
+
+  await assert.rejects(runDailyDigest({ root, config, state: { urls: [] }, dependencies }), /disk unavailable/);
+  const files = await readdir(root, { recursive: true });
+  assert.equal(files.some((file) => String(file).endsWith(".tmp")), false);
+});
+
+test("fetch-news CLI options require explicit fallback opt-in", () => {
+  assert.deepEqual(parseArguments([]), { force: false, allowSourceFallback: false });
+  assert.deepEqual(parseArguments(["--force", "--allow-source-fallback"]), { force: true, allowSourceFallback: true });
+  assert.throws(() => parseArguments(["--unknown"]), /Unknown argument/);
+});

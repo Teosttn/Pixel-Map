@@ -9,7 +9,7 @@
     "lint": "next lint",
     "news:fetch": "node scripts/fetch-news.mjs",
     "test:markdown": "node scripts/check-markdown-codeblocks.mjs",
-    "test:news": "node scripts/check-news-bot.mjs && node --test scripts/news/*.test.mjs",
+    "test:news": "node --test scripts/news/*.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
