@@ -1,7 +1,23 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import MarkdownIt from "markdown-it";
 import { renderDigest, digestSlug } from "./digest.mjs";
 import { summarizeItems, validateSummaryOutput } from "./openai.mjs";
+
+const contentMarkdown = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+  breaks: false
+});
+
+function renderDigestBody(markdown) {
+  return contentMarkdown.render(markdown.replace(/^---\n[\s\S]*?\n---\n?/, ""));
+}
+
+function anchorHrefs(html) {
+  return [...html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map((match) => match[1]);
+}
 
 const item = {
   title: "Release",
@@ -74,6 +90,40 @@ test("summarizeItems does not fall back after malformed model JSON", async () =>
     summarizeItems([item], { apiKey: "test-key", allowFallback: true, fetchImpl }),
     /valid JSON array/
   );
+});
+
+test("summarizeItems propagates every authenticated response pipeline error", async () => {
+  const invalidSchema = { ...bilingualText, commentEn: " " };
+  const cases = [
+    {
+      name: "network rejection",
+      fetchImpl: async () => { throw new Error("offline"); },
+      error: /offline/
+    },
+    {
+      name: "response JSON rejection",
+      fetchImpl: async () => ({ ok: true, json: async () => { throw new Error("invalid response JSON"); } }),
+      error: /invalid response JSON/
+    },
+    {
+      name: "missing output text",
+      fetchImpl: async () => new Response(JSON.stringify({ output: [] })),
+      error: /did not include text output/
+    },
+    {
+      name: "invalid summary schema",
+      fetchImpl: async () => new Response(JSON.stringify({ output_text: JSON.stringify([invalidSchema]) })),
+      error: /missing commentEn/
+    }
+  ];
+
+  for (const scenario of cases) {
+    await assert.rejects(
+      summarizeItems([item], { apiKey: "test-key", allowFallback: true, fetchImpl: scenario.fetchImpl }),
+      scenario.error,
+      scenario.name
+    );
+  }
 });
 
 test("summarizeItems uses Responses output text and preserves source metadata", async () => {
@@ -168,12 +218,50 @@ test("renderDigest folds and escapes untrusted Markdown text without corrupting 
   });
 
   const sourceLine = markdown.split("\n").find((line) => line.startsWith("sources: "));
-  assert.deepEqual(JSON.parse(sourceLine.slice("sources: ".length)), [maliciousSource]);
+  assert.deepEqual(
+    JSON.parse(sourceLine.slice("sources: ".length)),
+    ["Source [name](https://attacker.example) ## forged source"]
+  );
   assert.equal((markdown.match(/^## /gm) || []).length, 1);
   assert.doesNotMatch(markdown, /\n## forged/);
-  assert.ok(markdown.includes("## 1. 标题 \\#\\# forged title \\[link\\]\\(https:\\//attacker.example\\) / Title \\*with\\* \\[brackets\\]\\(https:\\//attacker.example\\)"));
-  assert.ok(markdown.includes("中文摘要：摘要 \\#\\# forged summary \\[link\\]\\(https:\\//attacker.example\\)"));
-  assert.ok(markdown.includes("English note: Comment \\`code\\` and \\[brackets\\]\\(https:\\//attacker.example\\)"));
-  assert.ok(markdown.includes("来源：[Source \\[name\\]\\(https:\\//attacker.example\\) \\#\\# forged source](https://example.com/release)"));
+  assert.ok(markdown.includes("## 1. 标题 \\#\\# forged title \\[link\\]\\(https&#58;//attacker.example\\) / Title \\*with\\* \\[brackets\\]\\(https&#58;//attacker.example\\)"));
+  assert.ok(markdown.includes("中文摘要：摘要 \\#\\# forged summary \\[link\\]\\(https&#58;//attacker.example\\)"));
+  assert.ok(markdown.includes("English note: Comment \\`code\\` and \\[brackets\\]\\(https&#58;//attacker.example\\)"));
+  assert.ok(markdown.includes("来源：[Source \\[name\\]\\(https&#58;//attacker.example\\) \\#\\# forged source](https://example.com/release)"));
+  assert.equal((markdown.match(/https:\/\/example\.com\/release/g) || []).length, 1);
+});
+
+test("renderDigest prevents markdown-it linkify from adding model-controlled anchors", () => {
+  const markdown = renderDigest({
+    date: "2026-07-10",
+    items: [{
+      ...item,
+      ...bilingualText,
+      titleZh: "标题 https://evil.example www.evil.com [evil](https://evil.example)\n## forged",
+      titleEn: "Title https://evil.example www.evil.com [evil](https://evil.example)",
+      summaryZh: "摘要 https://evil.example www.evil.com [evil](https://evil.example)",
+      summaryEn: "Summary https://evil.example www.evil.com [evil](https://evil.example)",
+      commentZh: "短评 https://evil.example www.evil.com [evil](https://evil.example)",
+      commentEn: "Comment https://evil.example www.evil.com [evil](https://evil.example)",
+      source: "Source https://evil.example www.evil.com [evil](https://evil.example)"
+    }]
+  });
+  const html = renderDigestBody(markdown);
+
+  assert.deepEqual(anchorHrefs(html), [item.url]);
+  assert.equal((html.match(/<h2\b/g) || []).length, 1);
+  assert.match(html, /https:\/\/evil\.example/);
+  assert.match(html, /www\.evil\.com/);
+});
+
+test("renderDigest cleans source frontmatter before enforcing the one-original-URL invariant", () => {
+  const source = `Example ${item.url}\n[untrusted]`;
+  const markdown = renderDigest({
+    date: "2026-07-10",
+    items: [{ ...item, ...bilingualText, source }]
+  });
+  const sourceLine = markdown.split("\n").find((line) => line.startsWith("sources: "));
+
+  assert.deepEqual(JSON.parse(sourceLine.slice("sources: ".length)), ["Example [untrusted]"]);
   assert.equal((markdown.match(/https:\/\/example\.com\/release/g) || []).length, 1);
 });

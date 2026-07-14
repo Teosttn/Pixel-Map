@@ -6,21 +6,23 @@ function yamlArray(values) {
   return `[${values.map(yamlString).join(", ")}]`;
 }
 
-function uniqueSources(items) {
-  return [...new Set(items.map((item) => item.source).filter(Boolean))];
-}
-
-function safeMarkdownText(value, originalUrl) {
+function compactText(value, originalUrl) {
   const text = originalUrl
     ? String(value).replaceAll(originalUrl, "")
     : String(value);
 
-  return text
-    .replace(/[\r\n]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
+  return text.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function uniqueSources(items) {
+  return [...new Set(items.map((item) => compactText(item.source, item.url)).filter(Boolean))];
+}
+
+function safeMarkdownText(value, originalUrl) {
+  return compactText(value, originalUrl)
     .replace(/([\\`*_[\]()<>{}#!])/g, "\\$1")
-    .replace(/:\/\//g, ":\\//");
+    .replace(/\bhttps?:\/\//gi, (url) => url.replace(":", "&#58;"))
+    .replace(/\bwww\./gi, "www&#46;");
 }
 
 export function digestSlug(date) {
