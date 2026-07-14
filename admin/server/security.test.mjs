@@ -21,3 +21,27 @@ test("rejects JSON mutations without a matching Origin", () => {
   const guard = createSessionGuard({ secret: "session", allowedOrigins: ["http://127.0.0.1:4317"] });
   assert.equal(guard({ method: "POST", headers: { host: "127.0.0.1:4317", cookie: "pixel_map_admin_session=session" } }, response), false);
 });
+
+test("refreshes a stale session cookie during safe reads", () => {
+  const response = { statusCode: 200, headers: {}, setHeader(key, value) { this.headers[key] = value; }, end() {} };
+  const guard = createSessionGuard({ secret: "fresh-session", allowedOrigins: ["http://127.0.0.1:4317"] });
+
+  assert.equal(guard({ method: "GET", headers: { host: "127.0.0.1:4317", cookie: "pixel_map_admin_session=stale-session" } }, response), true);
+  assert.match(response.headers["Set-Cookie"], /pixel_map_admin_session=fresh-session/);
+});
+
+test("returns a retryable code and refreshes the cookie for stale mutations", () => {
+  const response = {
+    statusCode: 200,
+    headers: {},
+    body: "",
+    setHeader(key, value) { this.headers[key] = value; },
+    end(value = "") { this.body = value; }
+  };
+  const guard = createSessionGuard({ secret: "fresh-session", allowedOrigins: ["http://127.0.0.1:4317"] });
+
+  assert.equal(guard({ method: "PUT", headers: { host: "127.0.0.1:4317", origin: "http://127.0.0.1:4317", cookie: "pixel_map_admin_session=stale-session" } }, response), false);
+  assert.equal(response.statusCode, 403);
+  assert.match(response.headers["Set-Cookie"], /pixel_map_admin_session=fresh-session/);
+  assert.equal(JSON.parse(response.body).code, "SESSION_REQUIRED");
+});
