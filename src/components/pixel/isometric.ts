@@ -23,6 +23,10 @@ export type MapTab = {
   href: string;
   color: string;
   glyph: string;
+  icon?: string;
+  landmark: string;
+  x: number;
+  y: number;
   title: string;
   zhTitle: string;
   description: string;
@@ -52,30 +56,27 @@ function noise(seed: number, x: number, y: number) {
   return value - Math.floor(value);
 }
 
-function landmarkPoint(index: number, size: number) {
-  const placements = [
-    [0.27, 0.62],
-    [0.7, 0.25],
-    [0.64, 0.72],
-    [0.8, 0.5],
-    [0.34, 0.28],
-    [0.5, 0.48]
-  ];
-  const [x, y] = placements[index % placements.length];
-  return {
-    x: Math.round(2 + x * (size - 5)),
-    y: Math.round(2 + y * (size - 5))
-  };
+function worldCoordinate(value: number, size: number) {
+  const minimum = 2;
+  const maximum = Math.max(minimum, size - 3);
+  const normalized = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 50;
+  return Math.round(minimum + (normalized / 100) * (maximum - minimum));
 }
 
-export function landmarkForTab(tab: MapTab, index: number, size: number): Landmark {
-  const point = landmarkPoint(index, size);
-  const types: LandmarkType[] = ["library", "tower", "workshop", "house", "portal", "page"];
+export function landmarkForTab(tab: MapTab, _index: number, size: number): Landmark {
+  const types: Record<string, LandmarkType> = {
+    library: "library",
+    tower: "tower",
+    workshop: "workshop",
+    house: "house",
+    lab: "portal",
+    portal: "portal"
+  };
   return {
     id: tab.id,
-    type: types[index % types.length],
-    x: point.x,
-    y: point.y,
+    type: types[tab.landmark] ?? "page",
+    x: worldCoordinate(tab.x, size),
+    y: worldCoordinate(tab.y, size),
     elevation: 2,
     color: tab.color
   };

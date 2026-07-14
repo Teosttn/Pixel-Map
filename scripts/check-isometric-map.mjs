@@ -6,12 +6,35 @@ const source = readFileSync("src/components/pixel/isometric.ts", "utf8");
 const js = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }
 }).outputText;
+const compiled = { exports: {} };
+new Function("exports", "module", js)(compiled.exports, compiled);
 
 assert.match(source, /export function projectTile/);
 assert.match(source, /export function createWorld/);
 assert.match(source, /screenX|originX/);
 assert.doesNotMatch(source, /Math\.random\(/, "world generation must be deterministic");
 assert.ok(js.length > 0);
+
+const configuredLandmark = compiled.exports.landmarkForTab({
+  id: "projects",
+  label: "Projects",
+  href: "/projects",
+  color: "var(--amber-glow)",
+  glyph: "P",
+  icon: "folder-kanban",
+  landmark: "workshop",
+  x: 56,
+  y: 23,
+  title: "Workshop",
+  zhTitle: "工坊",
+  description: "Projects",
+  zhDescription: "项目"
+}, 0, 14);
+assert.deepEqual(
+  { x: configuredLandmark.x, y: configuredLandmark.y, type: configuredLandmark.type },
+  { x: 7, y: 4, type: "workshop" },
+  "map x/y and landmark type must drive world placement"
+);
 
 const renderer = readFileSync("src/components/pixel/isometric-renderer.ts", "utf8");
 assert.match(renderer, /export function drawWorld/);
