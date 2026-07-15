@@ -1,9 +1,13 @@
 {
-  "lastPublishedDate": "2026-07-14",
-  "updatedAt": "2026-07-14T03:45:05.114Z",
+  "lastPublishedDate": "2026-07-15",
+  "updatedAt": "2026-07-15T07:19:36.397Z",
   "urls": [
     "/news",
+    "https://arxiv.org/abs/2607.12982",
+    "https://arxiv.org/abs/2607.13034",
     "https://developer.mozilla.org/en-us/docs/web/css/css_container_queries",
+    "https://github.com/QwenLM/qwen-code/releases/tag/sdk-typescript-v0.1.8",
+    "https://github.com/QwenLM/qwen-code/releases/tag/v0.19.10",
     "https://openai.com/global-affairs/introducing-the-intelligence-age",
     "https://openai.com/index/choco",
     "https://openai.com/index/frontier-alliance-partners",
@@ -11,8 +15,10 @@
     "https://openai.com/index/gpt-5-1-codex-max-system-card",
     "https://openai.com/index/how-agents-are-transforming-work",
     "https://openai.com/index/klarna",
+    "https://openai.com/index/managing-ai-investments-in-agentic-era",
     "https://openai.com/index/netomi",
     "https://ploy.ai/blog/migrating-a-production-ai-agent-to-gpt-5-6",
+    "https://prismml.com/news/bonsai-27b",
     "https://vercel.com/blog/360-billion-tokens-3-million-customers-6-engineers",
     "https://vercel.com/blog/ai-gateway-is-now-generally-available",
     "https://vercel.com/blog/ai-sdk-6",
@@ -33,6 +39,8 @@
     "https://vercel.com/changelog/next-forge-6",
     "https://vercel.com/changelog/qwen-3-7-max-now-available-on-vercel-ai-gateway",
     "https://vercel.com/changelog/qwen-3-7-plus-now-available-on-ai-gateway",
-    "https://vercel.com/changelog/qwen-3.6-plus-on-ai-gateway"
+    "https://vercel.com/changelog/qwen-3.6-plus-on-ai-gateway",
+    "https://vercel.com/changelog/vercel-plugin-now-available-in-vs-code-and-github-copilot-cli",
+    "https://www.benjamin-bai.com/projects/lemario"
   ]
 }
