@@ -5,7 +5,8 @@ date: "2026-06-30"
 summary: "A note on keeping animated personal sites elegant by limiting motion to the places where it actually helps."
 tags: ["motion", "frontend", "ux"]
 category: "Frontend"
-published: true
+published: false
+deleted: true
 ---
 
 ## Motion should have a job

@@ -5,7 +5,8 @@ date: "2026-06-29"
 summary: "Why this site starts as a map instead of a normal blog index, and how the content model stays simple."
 tags: ["meta", "design", "nextjs"]
 category: "Design Log"
-published: true
+published: false
+deleted: true
 ---
 
 ## The map is the interface
