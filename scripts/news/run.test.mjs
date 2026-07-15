@@ -142,6 +142,32 @@ test("runDailyDigest passes source caps and group quotas into selection", async 
   assert.deepEqual(selectionOptions.groupQuotas, { cn: 2, global: 2 });
 });
 
+test("runDailyDigest forwards compatible AI provider configuration", async () => {
+  const root = await createFixture();
+  let summaryOptions;
+
+  await runDailyDigest({
+    root,
+    config,
+    state: { urls: [] },
+    apiKey: "dashscope-key",
+    apiBaseUrl: "https://workspace.example.com/compatible-mode/v1",
+    model: "qwen-test",
+    dependencies: {
+      now: new Date("2026-07-10T00:30:00Z"),
+      fetchSources: async () => ({ items: [item], failures: [] }),
+      summarizeItems: async (items, options) => {
+        summaryOptions = options;
+        return items.map((entry) => ({ ...entry, ...summarizedItem }));
+      }
+    }
+  });
+
+  assert.equal(summaryOptions.apiKey, "dashscope-key");
+  assert.equal(summaryOptions.apiBaseUrl, "https://workspace.example.com/compatible-mode/v1");
+  assert.equal(summaryOptions.model, "qwen-test");
+});
+
 test("fetch-news writes machine-readable change metadata to GITHUB_OUTPUT", async () => {
   const root = await createFixture();
   const output = join(root, "github-output");

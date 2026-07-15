@@ -64,6 +64,21 @@ test("summarizeItems repairs one invalid translation and returns validated bilin
   assert.equal(result[0].url, item.url);
 });
 
+test("summarizeItems sends Responses requests to a configured compatible API base URL", async () => {
+  let requestUrl;
+  await summarizeItems([item], {
+    apiKey: "test-key",
+    apiBaseUrl: "https://workspace.example.com/compatible-mode/v1/",
+    model: "qwen-test",
+    fetchImpl: async (url) => {
+      requestUrl = url;
+      return response([valid]);
+    }
+  });
+
+  assert.equal(requestUrl, "https://workspace.example.com/compatible-mode/v1/responses");
+});
+
 test("summarizeItems aborts after a second invalid translation", async () => {
   const invalid = [{ ...valid, commentZh: valid.commentEn }];
   let calls = 0;

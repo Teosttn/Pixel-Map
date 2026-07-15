@@ -49,12 +49,12 @@ test("validateSummaryOutput rejects missing records and blank bilingual fields",
 test("summarizeItems always requires an API key and has no fake translation fallback", async () => {
   await assert.rejects(
     summarizeItems([item], { fetchImpl: async () => { throw new Error("must not fetch"); } }),
-    /OPENAI_API_KEY is required/
+    /NEWS_AI_API_KEY is required/
   );
 
   await assert.rejects(
     summarizeItems([], {}),
-    /OPENAI_API_KEY is required/
+    /NEWS_AI_API_KEY is required/
   );
 });
 

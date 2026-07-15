@@ -73,8 +73,9 @@ export async function runDailyDigest(options = {}) {
 
   const summarizeItems = dependencies.summarizeItems || summarizeConfiguredItems;
   const items = await summarizeItems(selected, {
-    apiKey: options.apiKey || process.env.OPENAI_API_KEY,
-    model: config.openAiModel,
+    apiKey: options.apiKey || process.env.NEWS_AI_API_KEY || process.env.DASHSCOPE_API_KEY || process.env.OPENAI_API_KEY,
+    apiBaseUrl: options.apiBaseUrl || process.env.NEWS_AI_BASE_URL,
+    model: options.model || process.env.NEWS_AI_MODEL || process.env.NEWS_OPENAI_MODEL || config.aiModel || config.openAiModel,
     fetchImpl: dependencies.openAiFetchImpl || options.openAiFetchImpl || fetch
   });
   const digest = renderDigest({ date, items });

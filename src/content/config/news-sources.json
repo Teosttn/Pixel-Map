@@ -10,7 +10,7 @@
   },
   "fetchAttempts": 2,
   "fetchTimeoutMs": 10000,
-  "openAiModel": "gpt-4.1-mini",
+  "aiModel": "qwen3.7-plus",
   "topicKeywords": [
     "AI",
     "agent",

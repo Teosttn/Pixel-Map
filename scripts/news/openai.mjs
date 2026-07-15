@@ -75,16 +75,21 @@ export function validateSummaryOutput(value, expectedLength) {
 }
 
 export async function summarizeItems(items, options = {}) {
-  const { apiKey, model = "gpt-4.1-mini", fetchImpl = fetch } = options;
+  const {
+    apiKey,
+    apiBaseUrl = "https://api.openai.com/v1",
+    model = "gpt-4.1-mini",
+    fetchImpl = fetch
+  } = options;
 
   if (!apiKey) {
-    throw new Error("OPENAI_API_KEY is required for news summarization");
+    throw new Error("NEWS_AI_API_KEY is required for news summarization");
   }
 
   if (items.length === 0) return [];
 
   const request = async (system, user) => {
-    const response = await fetchImpl("https://api.openai.com/v1/responses", {
+    const response = await fetchImpl(`${apiBaseUrl.replace(/\/+$/, "")}/responses`, {
       method: "POST",
       headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
       body: JSON.stringify({

@@ -54,10 +54,13 @@ jobs:
       - name: Fetch daily news
         id: fetch
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          NEWS_OPENAI_MODEL: ${{ vars.NEWS_OPENAI_MODEL }}
+          NEWS_AI_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          NEWS_AI_BASE_URL: ${{ vars.NEWS_AI_BASE_URL }}
+          NEWS_AI_MODEL: ${{ vars.NEWS_AI_MODEL }}
         run: |
-          test -n "$OPENAI_API_KEY"
+          test -n "$NEWS_AI_API_KEY"
+          test -n "$NEWS_AI_BASE_URL"
+          test -n "$NEWS_AI_MODEL"
           if [ "${{ inputs.force }}" = "true" ]; then
             npm run news:fetch -- --force
           else
