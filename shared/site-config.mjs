@@ -60,3 +60,9 @@ export function getCustomPageSlug(tab) {
   if (tab.kind !== "page") return null;
   return tab.href.slice(1);
 }
+
+export function withoutBasePath(pathname, basePath) {
+  if (!basePath) return pathname;
+  if (pathname === basePath) return "/";
+  return pathname.startsWith(`${basePath}/`) ? pathname.slice(basePath.length) : pathname;
+}

@@ -3,6 +3,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { siteConfig } from "@/lib/site";
+import { withoutBasePath } from "../../../shared/site-config.mjs";
 
 type RoutePhase = "idle" | "leaving" | "entering";
 
@@ -67,9 +69,10 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
 
     event.preventDefault();
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const destination = `${url.pathname}${url.search}${url.hash}`;
+    const internalPathname = withoutBasePath(url.pathname, siteConfig.basePath);
+    const destination = `${internalPathname}${url.search}${url.hash}`;
     setOrigin(target.dataset.transitionOrigin || "header");
-    setTheme(target.dataset.transitionTheme || themeForPath(url.pathname));
+    setTheme(target.dataset.transitionTheme || themeForPath(internalPathname));
 
     if (reducedMotion) {
       router.push(destination);

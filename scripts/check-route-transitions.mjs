@@ -6,6 +6,7 @@ assert.match(provider, /event\.metaKey|event\.ctrlKey|event\.shiftKey|event\.alt
 assert.match(provider, /target\.origin !== window\.location\.origin/);
 assert.match(provider, /prefers-reduced-motion/);
 assert.match(provider, /router\.push/);
+assert.match(provider, /withoutBasePath\(url\.pathname, siteConfig\.basePath\)/);
 
 const css = readFileSync("src/styles/globals.css", "utf8");
 assert.match(css, /data-route-phase="leaving"/);
