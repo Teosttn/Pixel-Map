@@ -31,23 +31,25 @@ jobs:
       digest_path: ${{ steps.fetch.outputs.digest_path }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
 
       - name: Setup Pages
         id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          test -x node_modules/.bin/next
 
       - name: Fetch daily news
         id: fetch
@@ -89,7 +91,7 @@ jobs:
 
       - name: Upload Pages artifact
         if: steps.fetch.outputs.changed == 'true'
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./out
 
