@@ -4,6 +4,9 @@ import { readFileSync } from "node:fs";
 const daily = readFileSync(".github/workflows/daily-news.yml", "utf8");
 const pages = readFileSync(".github/workflows/nextjs.yml", "utf8");
 const fetchNews = readFileSync("scripts/fetch-news.mjs", "utf8");
+const packageLock = readFileSync("package-lock.json", "utf8");
+
+assert.doesNotMatch(packageLock, /bnpm\.byted\.org/);
 
 assert.match(daily, /cron: "30 0 \* \* \*"/);
 assert.match(daily, /cron: "10 1 \* \* \*"/);
