@@ -5,3 +5,4 @@ export type TabMap = { glyph: string; icon: MapIcon; landmark: string; x: number
 export type TabConfig = { id: string; kind: TabKind; label: string; zh: string; href: string; visible: boolean; order: number; map: TabMap };
 export function validateTabsConfig(value: unknown): { tabs: TabConfig[] };
 export function getCustomPageSlug(tab: TabConfig): string | null;
+export function withoutBasePath(pathname: string, basePath: string): string;
