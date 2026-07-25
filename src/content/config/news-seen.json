@@ -1,8 +1,9 @@
 {
-  "lastPublishedDate": "2026-07-24",
-  "updatedAt": "2026-07-24T03:54:16.937Z",
+  "lastPublishedDate": "2026-07-25",
+  "updatedAt": "2026-07-25T03:49:20.405Z",
   "urls": [
     "/news",
+    "https://artificialanalysis.ai/models",
     "https://arxiv.org/abs/2606.06223",
     "https://arxiv.org/abs/2607.12982",
     "https://arxiv.org/abs/2607.13034",
@@ -17,6 +18,8 @@
     "https://arxiv.org/abs/2607.16727",
     "https://arxiv.org/abs/2607.19450",
     "https://arxiv.org/abs/2607.20064",
+    "https://arxiv.org/abs/2607.20507",
+    "https://arxiv.org/abs/2607.21433",
     "https://blaizzy.github.io/nativ",
     "https://calculus.academa.ai/",
     "https://cursor.com/blog/agent-swarm-model-economics",
@@ -25,6 +28,7 @@
     "https://dl.acm.org/doi/full/10.1145/3806645.3807580",
     "https://fireworks.ai/blog/kimik3-fable",
     "https://fortune.com/2026/07/19/data-center-eminent-domain-public-use",
+    "https://github.blog/ai-and-ml/github-copilot/copilot-vs-raw-api-access-what-are-you-actually-paying-for",
     "https://github.blog/engineering/the-cost-of-saying-yes-has-changed",
     "https://github.blog/open-source/maintainers/100-million-for-open-source-a-milestone-built-by-the-community",
     "https://github.blog/security/supply-chain-security/the-case-for-a-cooldown-why-dependabot-now-waits-before-issuing-version-updates",
@@ -32,6 +36,7 @@
     "https://github.com/MoonshotAI/kimi-cli/releases/tag/kosong-0.55.0",
     "https://github.com/QwenLM/qwen-code/releases/tag/cua-driver-rs-v0.7.2",
     "https://github.com/QwenLM/qwen-code/releases/tag/cua-driver-rs-v0.7.3",
+    "https://github.com/QwenLM/qwen-code/releases/tag/dsw-swe-full-async-poc-20260724-2c5ad4a5d0-r3",
     "https://github.com/QwenLM/qwen-code/releases/tag/pr7257-verify-screenshots",
     "https://github.com/QwenLM/qwen-code/releases/tag/sdk-typescript-v0.1.8",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.0.0-benchmark-poc.20260722.1",
@@ -44,6 +49,7 @@
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.20.0-nightly.20260722.b98306b7e",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.20.1",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.20.1-preview.7215",
+    "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.0",
     "https://github.com/hgaiser/moonshine",
     "https://huggingface.co/blog/allenai/shippy-tech-blog",
     "https://huggingface.co/blog/nvidia/nemotron-3-embed-wins-rteb",
@@ -82,6 +88,7 @@
     "https://vercel.com/changelog/ai-sdk-7",
     "https://vercel.com/changelog/auth0-joins-the-vercel-marketplace",
     "https://vercel.com/changelog/chat-sdk-adds-web-adapter-support",
+    "https://vercel.com/changelog/claude-opus-5-now-available-on-ai-gateway",
     "https://vercel.com/changelog/claude-sonnet-4-6-is-live-on-ai-gateway",
     "https://vercel.com/changelog/data-downloaded-by-vercel-sandbox-is-now-free",
     "https://vercel.com/changelog/firecrawl-joins-the-vercel-marketplace",
@@ -97,6 +104,7 @@
     "https://vercel.com/changelog/qwen-3.6-plus-on-ai-gateway",
     "https://vercel.com/changelog/vercel-plugin-now-available-in-kimi-code-cli",
     "https://vercel.com/changelog/vercel-plugin-now-available-in-vs-code-and-github-copilot-cli",
-    "https://www.benjamin-bai.com/projects/lemario"
+    "https://www.benjamin-bai.com/projects/lemario",
+    "https://www.theguardian.com/technology/2026/jul/24/openai-rogue-hacker"
   ]
 }
