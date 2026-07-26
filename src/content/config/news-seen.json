@@ -1,6 +1,6 @@
 {
-  "lastPublishedDate": "2026-07-25",
-  "updatedAt": "2026-07-25T03:49:20.405Z",
+  "lastPublishedDate": "2026-07-26",
+  "updatedAt": "2026-07-26T04:07:11.113Z",
   "urls": [
     "/news",
     "https://artificialanalysis.ai/models",
@@ -50,7 +50,11 @@
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.20.1",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.20.1-preview.7215",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.0",
+    "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.0-nightly.20260725.1183a4c82",
+    "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.0-nightly.20260726.9d19eafa9",
+    "https://github.com/demo-zexuan/liang-wenfeng-investor-meeting-2026-7-22/blob/master/%E6%A2%81%E6%96%87%E9%94%8B%E6%8A%95%E8%B5%84%E8%80%85%E4%BA%A4%E6%B5%81%E4%BC%9A-%E6%96%87%E5%AD%97%E7%A8%BF_1_18_translate_20260723201651.pdf",
     "https://github.com/hgaiser/moonshine",
+    "https://github.com/slvDev/esp32-ai",
     "https://huggingface.co/blog/allenai/shippy-tech-blog",
     "https://huggingface.co/blog/nvidia/nemotron-3-embed-wins-rteb",
     "https://huggingface.co/blog/nvidia/scale-diffusers-finetuning-nemo-automodel",
@@ -104,6 +108,8 @@
     "https://vercel.com/changelog/qwen-3.6-plus-on-ai-gateway",
     "https://vercel.com/changelog/vercel-plugin-now-available-in-kimi-code-cli",
     "https://vercel.com/changelog/vercel-plugin-now-available-in-vs-code-and-github-copilot-cli",
+    "https://vercel.com/changelog/vercel-waf-for-blob-is-now-in-beta",
+    "https://vercel.com/changelog/workflow-steps-now-support-extended-function-durations",
     "https://www.benjamin-bai.com/projects/lemario",
     "https://www.theguardian.com/technology/2026/jul/24/openai-rogue-hacker"
   ]
