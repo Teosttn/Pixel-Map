@@ -1,6 +1,6 @@
 {
-  "lastPublishedDate": "2026-07-30",
-  "updatedAt": "2026-07-30T03:42:17.138Z",
+  "lastPublishedDate": "2026-07-31",
+  "updatedAt": "2026-07-31T04:01:33.175Z",
   "urls": [
     "/news",
     "https://artificialanalysis.ai/models",
@@ -24,6 +24,8 @@
     "https://arxiv.org/abs/2607.24794",
     "https://arxiv.org/abs/2607.25066",
     "https://arxiv.org/abs/2607.25145",
+    "https://arxiv.org/abs/2607.26393",
+    "https://arxiv.org/abs/2607.26865",
     "https://blaizzy.github.io/nativ",
     "https://calculus.academa.ai/",
     "https://cursor.com/blog/agent-swarm-model-economics",
@@ -64,12 +66,15 @@
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.0-nightly.20260725.1183a4c82",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.0-nightly.20260726.9d19eafa9",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.0-nightly.20260727.c003e1718",
+    "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.0-nightly.20260729.0c0ca5fed",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.1",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.1-nightly.20260730.1643a6c9a",
+    "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.1-nightly.20260731.702932cc7",
     "https://github.com/demo-zexuan/liang-wenfeng-investor-meeting-2026-7-22/blob/master/%E6%A2%81%E6%96%87%E9%94%8B%E6%8A%95%E8%B5%84%E8%80%85%E4%BA%A4%E6%B5%81%E4%BC%9A-%E6%96%87%E5%AD%97%E7%A8%BF_1_18_translate_20260723201651.pdf",
     "https://github.com/hgaiser/moonshine",
     "https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/benchmarking-opus-5-on-slop-code-bench.md",
     "https://github.com/slvDev/esp32-ai",
+    "https://huggingface.co/blog/Dharma-AI/gpu-management",
     "https://huggingface.co/blog/allenai/shippy-tech-blog",
     "https://huggingface.co/blog/nvidia/nemotron-3-embed-wins-rteb",
     "https://huggingface.co/blog/nvidia/scale-diffusers-finetuning-nemo-automodel",
@@ -81,6 +86,7 @@
     "https://openai.com/global-affairs/introducing-the-intelligence-age",
     "https://openai.com/index/a-scorecard-for-the-ai-age",
     "https://openai.com/index/advancing-ai-safety-through-state-and-federal-action",
+    "https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6",
     "https://openai.com/index/choco",
     "https://openai.com/index/frontier-alliance-partners",
     "https://openai.com/index/genspark",
@@ -121,6 +127,7 @@
     "https://vercel.com/changelog/gemini-3-6-flash-3-5-flash-lite-on-ai-gateway",
     "https://vercel.com/changelog/glm-5-2-is-35-off-via-novita-on-ai-gateway",
     "https://vercel.com/changelog/inkling-from-thinking-machines-is-now-available-on-ai-gateway",
+    "https://vercel.com/changelog/inkling-small-now-available-on-ai-gateway",
     "https://vercel.com/changelog/introducing-eve-an-open-source-agent-framework",
     "https://vercel.com/changelog/kimi-k3-and-kimi-k3-fast-on-ai-gateway",
     "https://vercel.com/changelog/kimi-k3-is-now-available-on-ai-gateway",
@@ -135,6 +142,7 @@
     "https://vercel.com/changelog/vercel-waf-for-blob-is-now-in-beta",
     "https://vercel.com/changelog/workflow-steps-now-support-extended-function-durations",
     "https://www.benjamin-bai.com/projects/lemario",
+    "https://www.ctgt.ai/research/distillation-censorship-transfer",
     "https://www.theguardian.com/technology/2026/jul/24/openai-rogue-hacker"
   ]
 }
