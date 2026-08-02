@@ -1,6 +1,6 @@
 {
-  "lastPublishedDate": "2026-08-01",
-  "updatedAt": "2026-08-01T04:01:47.806Z",
+  "lastPublishedDate": "2026-08-02",
+  "updatedAt": "2026-08-02T04:04:40.685Z",
   "urls": [
     "/news",
     "https://artificialanalysis.ai/models",
@@ -28,6 +28,7 @@
     "https://arxiv.org/abs/2607.26865",
     "https://blaizzy.github.io/nativ",
     "https://calculus.academa.ai/",
+    "https://costperprompt.com/",
     "https://cursor.com/blog/agent-swarm-model-economics",
     "https://deepmind.google/blog/our-approach-to-bioresilience",
     "https://developer.mozilla.org/en-us/docs/web/css/css_container_queries",
@@ -36,6 +37,7 @@
     "https://fortune.com/2026/07/19/data-center-eminent-domain-public-use",
     "https://github.blog/ai-and-ml/github-copilot/copilot-vs-raw-api-access-what-are-you-actually-paying-for",
     "https://github.blog/ai-and-ml/github-copilot/github-copilot-app-for-beginners-getting-started",
+    "https://github.blog/ai-and-ml/github-copilot/stacked-sessions-and-pull-requests-in-the-github-copilot-app",
     "https://github.blog/ai-and-ml/github-copilot/the-harness-is-all-you-need-mostly",
     "https://github.blog/engineering/architecture-optimization/dont-stop-early-case-folding-source-code-at-memory-speed",
     "https://github.blog/engineering/the-cost-of-saying-yes-has-changed",
@@ -73,6 +75,8 @@
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.1",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.1-nightly.20260730.1643a6c9a",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.1-nightly.20260731.702932cc7",
+    "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.3",
+    "https://github.com/QwenLM/qwen-code/releases/tag/v0.21.3-nightly.20260802.184365390",
     "https://github.com/demo-zexuan/liang-wenfeng-investor-meeting-2026-7-22/blob/master/%E6%A2%81%E6%96%87%E9%94%8B%E6%8A%95%E8%B5%84%E8%80%85%E4%BA%A4%E6%B5%81%E4%BC%9A-%E6%96%87%E5%AD%97%E7%A8%BF_1_18_translate_20260723201651.pdf",
     "https://github.com/hgaiser/moonshine",
     "https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/benchmarking-opus-5-on-slop-code-bench.md",
@@ -89,6 +93,7 @@
     "https://openai.com/global-affairs/introducing-the-intelligence-age",
     "https://openai.com/index/a-scorecard-for-the-ai-age",
     "https://openai.com/index/advancing-ai-safety-through-state-and-federal-action",
+    "https://openai.com/index/advancing-responsible-ai-across-europe",
     "https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6",
     "https://openai.com/index/avatarin",
     "https://openai.com/index/chatgpt-for-academic-researchers",
@@ -107,6 +112,7 @@
     "https://openai.com/index/netomi",
     "https://openai.com/index/safety-alignment-long-horizon-models",
     "https://openai.com/index/scientific-computing-agentic-ai",
+    "https://openai.com/index/ten-advances-in-mathematics",
     "https://ploy.ai/blog/migrating-a-production-ai-agent-to-gpt-5-6",
     "https://prismml.com/news/bonsai-27b",
     "https://usetokenless.com/",
@@ -122,6 +128,7 @@
     "https://vercel.com/blog/vercel-for-enterprise-apps-and-agents",
     "https://vercel.com/blog/vercel-services-run-full-stack-on-vercel",
     "https://vercel.com/changelog/10x-more-capacity-for-laguna-s-2-1-on-ai-gateway",
+    "https://vercel.com/changelog/ai-gateway-logs",
     "https://vercel.com/changelog/ai-sdk-7",
     "https://vercel.com/changelog/auth0-joins-the-vercel-marketplace",
     "https://vercel.com/changelog/chat-sdk-adds-web-adapter-support",
@@ -151,6 +158,7 @@
     "https://www.benjamin-bai.com/projects/lemario",
     "https://www.ctgt.ai/research/distillation-censorship-transfer",
     "https://www.quantamagazine.org/is-ai-reasoning-right-for-the-wrong-reasons-20260731",
-    "https://www.theguardian.com/technology/2026/jul/24/openai-rogue-hacker"
+    "https://www.theguardian.com/technology/2026/jul/24/openai-rogue-hacker",
+    "https://zenodo.org/records/21753002"
   ]
 }
