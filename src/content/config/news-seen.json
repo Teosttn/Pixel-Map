@@ -1,6 +1,6 @@
 {
-  "lastPublishedDate": "2026-09-15",
-  "updatedAt": "2026-09-15T05:10:34.828Z",
+  "lastPublishedDate": "2026-09-17",
+  "updatedAt": "2026-09-17T06:07:21.672Z",
   "urls": [
     "/news",
     "https://agentsdock.net/",
@@ -93,6 +93,8 @@
     "https://arxiv.org/abs/2609.11147",
     "https://arxiv.org/abs/2609.13457",
     "https://arxiv.org/abs/2609.15606",
+    "https://arxiv.org/abs/2609.18283",
+    "https://arxiv.org/abs/2609.18591",
     "https://blaizzy.github.io/nativ",
     "https://blog.cloudflare.com/smaller-faster-safer-models",
     "https://blog.fogus.me/llm/born-against.html",
@@ -156,6 +158,7 @@
     "https://github.com/QwenLM/qwen-code/releases/tag/desktop-v0.2.0",
     "https://github.com/QwenLM/qwen-code/releases/tag/desktop-v0.2.1",
     "https://github.com/QwenLM/qwen-code/releases/tag/desktop-v0.2.2",
+    "https://github.com/QwenLM/qwen-code/releases/tag/desktop-v0.24.0",
     "https://github.com/QwenLM/qwen-code/releases/tag/desktop-v0.3.0",
     "https://github.com/QwenLM/qwen-code/releases/tag/desktop-v0.3.0-preview.0",
     "https://github.com/QwenLM/qwen-code/releases/tag/dsw-eas-full-20260813-r1",
@@ -246,6 +249,7 @@
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.23.3",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.23.3-nightly.20260912.54aa66834b",
     "https://github.com/QwenLM/qwen-code/releases/tag/v0.23.4",
+    "https://github.com/QwenLM/qwen-code/releases/tag/v0.24.0-nightly.20260916.b8def02aad",
     "https://github.com/ThinkOffApp/CarWatch",
     "https://github.com/TraceCohenTech/ai-seo-playbook",
     "https://github.com/argonautlabsai/deltafin",
@@ -271,6 +275,7 @@
     "https://huggingface.co/blog/asr-benchmark-optimization",
     "https://huggingface.co/blog/baseten",
     "https://huggingface.co/blog/ibm-granite/granite-4-2",
+    "https://huggingface.co/blog/ibm-research/altk-evolve-consistency",
     "https://huggingface.co/blog/ibm-research/altk-evolve-hmm",
     "https://huggingface.co/blog/ibm-research/ibm-releases-sota-granite-time-series",
     "https://huggingface.co/blog/ibm-research/real-time-intelligence",
@@ -333,6 +338,7 @@
     "https://openai.com/index/klarna",
     "https://openai.com/index/legora-financial-statement-review-with-astra",
     "https://openai.com/index/managing-ai-investments-in-agentic-era",
+    "https://openai.com/index/model-misalignment-reporting-framework",
     "https://openai.com/index/navier-stokes-solution",
     "https://openai.com/index/netomi",
     "https://openai.com/index/offering-zero-data-retention-for-frontier-models",
@@ -348,6 +354,7 @@
     "https://openai.com/index/previewing-ultrafast",
     "https://openai.com/index/put-data-to-work",
     "https://openai.com/index/putting-frontier-cyber-models-in-more-trusted-hands",
+    "https://openai.com/index/reimagining-advertising-with-ai",
     "https://openai.com/index/research-acceleration-view-inside-openai",
     "https://openai.com/index/responding-next-frontier-critical-cyber-capabilities",
     "https://openai.com/index/safety-alignment-long-horizon-models",
@@ -472,6 +479,7 @@
     "https://www.theregister.com/systems/2026/08/06/amd-acquires-ai-chip-startup-taalas-to-boost-inference-performance-by-etching-models-into-silicon/5284344",
     "https://www.xda-developers.com/qwen-3-8-27b-reverse-engineering-job-frontier-model",
     "https://xescu.re/keeta-consensus.pdf",
+    "https://zartbot.github.io/blog/model_arch/dsv41flash_arch/en.html",
     "https://zenodo.org/records/21753002"
   ]
 }
